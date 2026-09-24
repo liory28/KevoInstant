@@ -1,0 +1,9 @@
+{
+  "name": "kevo-instant-approval",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kevo Instant Approval — static site + serverless AI backend (Netlify Functions).",
+  "scripts": {
+    "dev": "netlify dev"
+  }
+}
