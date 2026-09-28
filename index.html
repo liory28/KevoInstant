@@ -95,6 +95,11 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px;}
   .chip{background:var(--surface);border:1px solid var(--stone-line-strong);border-radius:999px;padding:8px 15px;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;}
   .chip:hover{border-color:var(--clay-deep);color:var(--clay-deep);}
+  .chip.chip-other{background:transparent;border-style:dashed;color:var(--ink-soft);font-weight:600;}
+  .chip.chip-other:hover{border-color:var(--clay-deep);color:var(--clay-deep);}
+  .other-input{display:flex;flex-direction:column;gap:7px;}
+  .other-back{align-self:flex-start;background:none;border:none;color:var(--ink-faint);font-size:11.5px;cursor:pointer;padding:2px 0;text-decoration:underline;}
+  .other-back:hover{color:var(--clay-deep);}
   .textrow{display:flex;gap:8px;}
   .textrow input{flex:1;background:var(--surface);border:1px solid var(--stone-line-strong);border-radius:11px;padding:11px 13px;}
   .sendbtn{background:var(--clay);color:#FBF6EF;border:none;border-radius:11px;padding:0 18px;font-weight:600;cursor:pointer;}
@@ -146,15 +151,45 @@
   .letter li{margin-top:4px;}
   .letter-foot{border-top:1px solid var(--stone-line);padding-top:12px;font-size:11px;color:var(--ink-faint);line-height:1.6;}
 
-  .askbar{border-top:1px solid var(--stone-line);background:var(--surface);padding:10px 16px;display:flex;flex-direction:column;gap:8px;}
-  .askbar.collapsed .ask-row{display:none;}
-  .ask-toggle{display:flex;align-items:center;gap:7px;background:none;border:none;color:var(--sage-deep);font-weight:600;font-size:12.5px;cursor:pointer;padding:2px 0;align-self:flex-start;}
-  .ask-toggle::before{content:"\2728";font-size:12px;}
-  .ask-row{display:flex;gap:8px;}
-  .ask-row input{flex:1;background:var(--surface-2);border:1px solid var(--stone-line-strong);border-radius:10px;padding:9px 12px;font-size:13.5px;}
+  .ai-tag{font-family:"JetBrains Mono",monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--sage-deep);background:var(--sage-tint);border-radius:5px;padding:2px 6px;display:inline-block;margin-bottom:5px;}
+
+  /* ---- floating "Ask Kevo" chat widget (v14) — a separate surface from the approval flow,
+     so a side conversation never displaces or gets tangled up with the guided steps underneath.
+     Hidden until live AI is confirmed available (see enableChatWidget()). ---- */
+  .chat-launcher{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:var(--sage-deep);color:#F5F1E8;border:none;box-shadow:var(--shadow-md);cursor:pointer;display:none;align-items:center;justify-content:center;z-index:70;transition:transform .15s ease;}
+  .chat-launcher.ready{display:flex;}
+  .chat-launcher:hover{transform:scale(1.06);}
+  .chat-launcher svg{width:24px;height:24px;}
+  .chat-launcher .cl-close-icon{display:none;}
+  .chat-launcher.open .cl-chat-icon{display:none;}
+  .chat-launcher.open .cl-close-icon{display:block;}
+  .chat-launcher .cl-badge{position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:var(--clay);border:2px solid var(--paper);}
+  .chat-hint{position:fixed;right:20px;bottom:86px;max-width:220px;background:var(--surface);border:1px solid var(--stone-line-strong);border-radius:12px;border-bottom-right-radius:4px;padding:10px 13px;font-size:12.5px;line-height:1.4;color:var(--ink);box-shadow:var(--shadow-md);z-index:69;}
+  .chat-hint.hidden{display:none;}
+
+  .chat-panel{position:fixed;right:20px;bottom:86px;width:380px;max-width:calc(100vw - 32px);height:min(66vh,540px);max-height:calc(100vh - 120px);background:var(--surface);border:1px solid var(--stone-line);border-radius:16px;box-shadow:var(--shadow-md);display:flex;flex-direction:column;overflow:hidden;z-index:71;opacity:0;transform:translateY(12px) scale(.98);pointer-events:none;transition:opacity .16s ease, transform .16s ease;}
+  .chat-panel.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+  .chat-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;border-bottom:1px solid var(--stone-line);background:var(--surface-2);flex:none;}
+  .chat-panel-head .cph-title{display:flex;align-items:center;gap:9px;}
+  .chat-panel-head .ti{font-size:14px;font-weight:600;}
+  .chat-panel-head .ts{font-size:11px;color:var(--ink-faint);}
+  .chat-panel-close{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:19px;line-height:1;padding:4px 6px;border-radius:7px;}
+  .chat-panel-close:hover{background:var(--stone);color:var(--ink);}
+  .chat-panel-stream{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .chat-panel-empty{font-size:12.5px;color:var(--ink-soft);line-height:1.5;padding:4px 2px;}
+  .chat-panel-notice{font-size:12px;color:var(--sage-deep);font-weight:600;display:flex;align-items:center;gap:6px;}
+  .ask-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--stone-line);background:var(--surface-2);flex:none;}
+  .ask-row input{flex:1;background:var(--surface);border:1px solid var(--stone-line-strong);border-radius:10px;padding:9px 12px;font-size:13.5px;}
   .ask-row button{background:var(--sage-deep);color:#F5F1E8;border:none;border-radius:10px;padding:0 15px;font-weight:600;cursor:pointer;font-size:13px;}
   .ask-row button:disabled{opacity:.5;cursor:default;}
-  .ai-tag{font-family:"JetBrains Mono",monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--sage-deep);background:var(--sage-tint);border-radius:5px;padding:2px 6px;display:inline-block;margin-bottom:5px;}
+  @media (max-width:520px){
+    .chat-panel{right:12px;left:12px;width:auto;max-width:none;bottom:82px;height:min(70vh,520px);}
+    .chat-hint{right:12px;max-width:calc(100vw - 24px);}
+  }
+
+  .flow-toast{position:fixed;right:20px;bottom:86px;background:var(--sage-deep);color:#F5F1E8;font-size:13px;font-weight:600;padding:10px 18px;border-radius:99px;box-shadow:var(--shadow-md);z-index:75;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .2s ease, transform .2s ease;display:flex;align-items:center;gap:8px;}
+  .flow-toast.show{opacity:1;transform:translateY(0);}
+  @media (max-width:520px){ .flow-toast{right:12px;} }
 
   .path-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
   .path-choice.program-choice{grid-template-columns:1fr 1fr 1fr;}
@@ -234,6 +269,23 @@
   .snap-card .snap-addr{font-family:"Fraunces",serif;font-weight:600;font-size:14.5px;line-height:1.35;}
   .snap-card .snap-note{font-size:11px;color:var(--ink-faint);margin-top:3px;}
 
+  /* v17: Deal snapshot rows double as a "go back and edit" surface — every answered field gets
+     a small pencil that opens an inline editor right there, without leaving the current step. */
+  .snap-card .card-row{align-items:center;}
+  .snap-card .card-row .srv{display:flex;align-items:center;gap:2px;}
+  .snap-card .edit-pencil{background:none;border:none;padding:3px;margin:-3px -3px -3px 2px;color:var(--ink-faint);cursor:pointer;display:inline-flex;align-items:center;border-radius:6px;opacity:.6;flex-shrink:0;}
+  .snap-card .edit-pencil:hover{opacity:1;color:var(--clay-deep);background:var(--clay-tint);}
+  .snap-edit-box{margin-top:10px;padding-top:10px;border-top:1px dashed var(--stone-line);display:flex;flex-direction:column;gap:6px;}
+  .snap-edit-box label{font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-faint);}
+  .snap-edit-box .ser-row{display:flex;gap:6px;}
+  .snap-edit-box input, .snap-edit-box select{flex:1;min-width:0;background:var(--surface);border:1px solid var(--stone-line-strong);border-radius:9px;padding:8px 10px;font-size:13px;color:var(--ink);}
+  .snap-edit-box .ser-actions{display:flex;gap:6px;margin-top:2px;}
+  .snap-edit-box button{border-radius:9px;border:none;font-weight:600;font-size:12.5px;cursor:pointer;padding:7px 12px;}
+  .snap-edit-box .ser-save{background:var(--clay);color:#FBF6EF;}
+  .snap-edit-box .ser-save:disabled{opacity:.5;cursor:default;}
+  .snap-edit-box .ser-cancel{background:transparent;color:var(--ink-faint);border:1px solid var(--stone-line-strong);}
+  .snap-edit-box .ser-err{color:var(--clay-deep);font-size:11.5px;display:none;}
+
   .stepper{display:flex;flex-direction:column;gap:2px;}
   .step-meter-track{height:6px;border-radius:99px;background:var(--stone);margin-bottom:12px;overflow:hidden;}
   .step-meter-fill{height:100%;border-radius:99px;background:var(--sage-deep);transition:width .35s ease;}
@@ -308,18 +360,11 @@
           <div class="avatar">K</div>
           <div>
             <div class="ti">Kevo Instant Approval</div>
-            <div class="ts"><span class="dot"></span>DSCR &middot; Bank Statement &middot; P&amp;L</div>
+            <div class="ts"><span class="dot"></span>3 simple ways to qualify &middot; no tax returns needed</div>
           </div>
         </div>
         <div class="stream" id="stream"></div>
         <div class="composer" id="composer"></div>
-        <div class="askbar collapsed" id="askbar" style="display:none;">
-          <button class="ask-toggle" id="askToggle" type="button">Ask your own question, anytime</button>
-          <div class="ask-row">
-            <input id="askInput" type="text" placeholder="e.g. Why was I referred instead of approved?">
-            <button id="askSend" type="button">Ask</button>
-          </div>
-        </div>
 
         <div class="overlay" id="formOverlay">
           <div class="login-card" id="formOverlayCard"></div>
@@ -373,18 +418,127 @@
   </div>
 </div>
 
+<!-- ---- floating "Ask Kevo" chat widget (v14) — deliberately OUTSIDE .appframe so it floats
+     above the whole app, on its own separate surface from the approval flow. See enableChatWidget()
+     and askQuestion() in the script below. Hidden (no .ready class) until live AI is confirmed. ---- -->
+<button class="chat-launcher" id="chatLauncher" type="button" aria-label="Ask Kevo anything">
+  <svg class="cl-chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+  <svg class="cl-close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+  <span class="cl-badge" id="chatLauncherBadge" style="display:none;"></span>
+</button>
+
+<div class="chat-hint hidden" id="chatHint">
+  <span id="chatHintText">Confused? Ask me anything — I'll pick right back up exactly where you left off.</span>
+</div>
+
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-panel-head">
+    <div class="cph-title">
+      <div class="avatar" style="width:28px;height:28px;font-size:12px;">K</div>
+      <div>
+        <div class="ti">Ask Kevo</div>
+        <div class="ts">Separate from your approval — ask anything, anytime</div>
+      </div>
+    </div>
+    <button class="chat-panel-close" id="chatPanelCloseBtn" type="button" aria-label="Close chat">&times;</button>
+  </div>
+  <div class="chat-panel-stream" id="chatPanelStream">
+    <div class="chat-panel-empty" id="chatPanelEmpty">Ask anything about your loan, this process, or a term you don't recognize — your approval keeps its place while you do. If you tell me something that changes your answers (like a correction, or a change of mind), I'll update your file and pick the guided flow back up for you.</div>
+  </div>
+  <div class="ask-row">
+    <input id="askInput" type="text" placeholder="e.g. What does DSCR mean?">
+    <button id="askSend" type="button">Ask</button>
+  </div>
+</div>
+
+<div class="flow-toast" id="flowToast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+  <span id="flowToastText">Continuing your approval…</span>
+</div>
+
 <script>
 (function(){
-  var state = { step:0, data:{}, log:[], mode:'buyer', chatId:null };
+  // pendingField/pendingAdvance track whichever guided-flow question is on screen right now,
+  // right before its chips/composer render (see the ask* step functions below). If the borrower
+  // answers that exact question through the ask-bar instead of clicking/typing in the composer,
+  // applyCorrections() uses these to continue the SAME guided step the composer would have —
+  // instead of leaving a stale, already-answered composer sitting there. Cleared the moment the
+  // real composer is answered (by click, by typed submit, or by this same mechanism).
+  var state = { step:0, data:{}, log:[], mode:'buyer', chatId:null, pendingField:null, pendingAdvance:null };
   var STEP_DEFS = [
     {l:'Conversation started', s:'What is the deal?'},
     {l:'Scenario estimate', s:'Illustrative terms'},
     {l:'Credit &amp; assets', s:'Separate authorizations'},
     {l:'Decision', s:'Letter or underwriter referral'}
   ];
+  // ---- correction handling: lets a borrower or agent correct a simulated number by just
+  // typing it into the ask bar (e.g. "there's no HOA" / "taxes are actually lower, about 300"),
+  // or (v17) by tapping the edit pencil next to that answer in the Deal Snapshot. A quick
+  // structured-extraction call decides whether a typed message states a usable correction; if so
+  // it's actually applied to state.data (not just acknowledged in words) before the normal
+  // conversational reply is generated, and the decision is recomputed if one had already run. This
+  // has to be defined this early (not down by detectCorrections()/applyCorrections(), where it
+  // conceptually belongs) because renderDealSnapshot() reads it on the very first render, at
+  // startup — before the rest of the script below has finished executing top-to-bottom, `var`
+  // hoisting would otherwise leave it undefined at that point.
+  var CORRECTION_FIELDS = {
+    tax: {label:'Monthly property tax', kind:'currency'},
+    ins: {label:'Monthly insurance', kind:'currency'},
+    hoa: {label:'Monthly HOA', kind:'currency'},
+    rent: {label:'Rent / qualifying income', kind:'currency'},
+    propertyValue: {label:'Purchase price / value', kind:'currency'},
+    loanAmount: {label:'Loan amount', kind:'currency'},
+    downPct: {label:'Down payment', kind:'percent'},
+    // ---- added alongside the pendingField-aware disambiguation fix (v16): a flat dollar figure
+    // for the down payment ("$150,000 down", "150k") is a genuinely different shape of answer
+    // than a percentage, and needs its own field rather than being force-fit into downPct (whose
+    // kind is specifically "a decimal 0-1") or silently misread as some other dollar-shaped field
+    // like reservesAmount. See applyCorrections()'s downAmount -> downPct cross-compute below.
+    downAmount: {label:'Down payment (dollar amount)', kind:'currency'},
+    credit: {label:'Credit tier', kind:'enum', options:['740+','700-739','660-699','620-659','<620']},
+    // ---- structural fields: a change of mind, not just a number tweak. These can require real
+    // new input (a real credit pull for a tier upgrade, income docs for a program switch into
+    // Bank Statement/P&L) rather than a silent field flip — see applyCorrections()'s `structural`
+    // handling and the `reopenQueue` it can produce, which askQuestion() runs right after the
+    // AI's reply so the guided flow actually collects whatever the change now requires.
+    tier: {label:'Approval type', kind:'enum', options:['preapproval','full'], reopen:'tier',
+      valueLabels:{preapproval:'Pre-Approval', full:'Fully Underwritten Approval'}},
+    program: {label:'Loan program', kind:'enum', options:['dscr','bankstatement','pnl'], reopen:'program',
+      valueLabels:{dscr:'DSCR (rental income)', bankstatement:'Bank Statement', pnl:'P&L'}},
+    purpose: {label:'Loan purpose', kind:'enum', options:['purchase','ratetermrefi','cashoutrefi'],
+      valueLabels:{purchase:'Purchase', ratetermrefi:'Rate/Term Refinance', cashoutrefi:'Cash-Out Refinance'}},
+    propertyType: {label:'Property type', kind:'enum', options:['sfr','condo24','condotel','rural'],
+      valueLabels:{sfr:'Single-family/modular', condo24:'2-4 units/condo', condotel:'Condotel', rural:'Rural'}},
+    entity: {label:'Entity', kind:'enum', options:['Individual','LLC'],
+      valueLabels:{Individual:'Individual', LLC:'LLC/entity'}},
+    // ---- added for the "Something else" free-text escape hatch (v15): these three were
+    // previously not correctable at all through the ask bar / floating chat, so typing a
+    // free-form answer to the reserves, credit-history, or financed-properties questions used to
+    // just produce a generic AI reply with nothing actually captured — flagged as an open item
+    // since v13. Now covered like everything else.
+    reserves: {label:'Reserves', kind:'enum', options:['<3','3-6','6+'],
+      valueLabels:{'<3':'under 3 months', '3-6':'3–6 months', '6+':'6+ months'}},
+    reservesAmount: {label:'Reserves (approx. savings)', kind:'currency'},
+    events: {label:'Credit history / seasoning', kind:'enum', options:['none','36+','24-35','<24'],
+      valueLabels:{none:'none', '36+':'3+ years ago', '24-35':'2–3 years ago', '<24':'within the last 2 years'}},
+    portfolioCount: {label:'Financed rental properties owned', kind:'number'}
+  };
+  // v17: which of the corrigible fields to surface in the Deal Snapshot, and in what order — this
+  // doubles as "your answers, and a way to go back and edit one," per Lior's ask, reusing
+  // CORRECTION_FIELDS' own labels/kinds/options so there's exactly one definition of each field's
+  // shape in the whole app. 'address' is shown but not in this list (and not editable here) —
+  // correcting it would mean re-running the property lookup, which is a bigger change than a
+  // field tweak and is out of scope for this pass. Defined here (not down by
+  // renderDealSnapshot(), where it conceptually belongs) for the same reason CORRECTION_FIELDS
+  // is: renderDealSnapshot() reads it on the very first render, before the rest of the script has
+  // finished executing top-to-bottom.
+  var SNAPSHOT_FIELD_ORDER = ['program','purpose','tier','propertyValue','rent','loanAmount','downPct',
+    'tax','ins','hoa','credit','entity','reserves','events','propertyType','portfolioCount'];
+  var EDIT_PENCIL_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>';
   var stream = document.getElementById('stream');
   var composer = document.getElementById('composer');
   var checklist = document.getElementById('checklist');
+  var chatPanelStream = document.getElementById('chatPanelStream');
 
   // ---- list of chats (nav rail): a per-browser record of past deals, so an agent or buyer can
   // come back to one later. Persisted to localStorage best-effort; falls back to in-memory only
@@ -424,6 +578,7 @@
     return street ? base+' — '+street : base;
   }
   function computeChatSubtitle(){
+    if(state.data.loanStarted) return 'Processing started';
     if(state.result){
       var approved = state.result.status === 'approved';
       return approved ? (state.result.tier==='full' ? 'Fully underwritten' : 'Approved') : (state.result.badgeOverride || 'Referred');
@@ -481,6 +636,7 @@
     state.data = JSON.parse(JSON.stringify(entry.data));
     state.result = entry.result ? JSON.parse(JSON.stringify(entry.result)) : null;
     state.step = 0;
+    state.pendingField = null; state.pendingAdvance = null;
     askTurns = [];
     stream.innerHTML = ''; composer.innerHTML = '';
     setModeUI(state.mode);
@@ -502,6 +658,7 @@
     if(d.loanAmount) lines.push('<div class="card-row"><span>Loan amount</span><b class="mono">'+fmt$(d.loanAmount)+'</b></div>');
     if(d.rent) lines.push('<div class="card-row"><span>'+(d.program && d.program!=='dscr' ? 'Qualifying income' : 'Rent')+'</span><b class="mono">'+fmt$(d.rent)+'/mo</b></div>');
     if(r) lines.push('<div class="card-row"><span>Status</span><b class="mono">'+(r.status==='approved'?(r.tier==='full'?'Fully underwritten':'Conditionally approved'):(r.badgeOverride||'Referred'))+'</b></div>');
+    if(d.loanStarted) lines.push('<div class="card-row"><span>Loan status</span><b class="mono">Processing started</b></div>');
     addBotCard('<div class="ck">Resuming — '+safeHtml(computeChatTitle())+'</div>'+(lines.length?lines.join(''):'<div class="card-row"><span>No details saved yet</span><b class="mono">—</b></div>'), function(){
       resumeFlow();
     });
@@ -514,7 +671,7 @@
       return true;
     });
     var missing = items.filter(function(it){ return !state.data[it.k]; }).map(function(it){ return it.l; });
-    addBotBubble("Picking back up on "+(state.data.address || 'this deal')+" — still need: "+missing.join(', ')+". You can tell me here, or use the ask bar below to correct or add anything.", function(){
+    addBotBubble("Picking back up on "+(state.data.address || 'this deal')+" — still need: "+missing.join(', ')+". You can tell me here, or tap the chat bubble in the corner to correct or add anything.", function(){
       setComposerChips([{label:'Restart the guided flow', value:'restart'}], function(v){
         if(v==='restart'){
           if(state.mode === 'agent'){ agentStart(); } else { start(); }
@@ -1007,6 +1164,7 @@
   }
 
   function scrollDown(){ stream.scrollTop = stream.scrollHeight; }
+  function scrollPanelDown(){ chatPanelStream.scrollTop = chatPanelStream.scrollHeight; }
 
   function addBotBubble(html, cb){
     var typing = document.createElement('div');
@@ -1036,15 +1194,48 @@
     stream.appendChild(el); scrollDown();
   }
 
-  function setComposerChips(options, onPick){
-    composer.innerHTML = '';
-    var wrap = document.createElement('div'); wrap.className = 'chips';
-    options.forEach(function(opt){
-      var b = document.createElement('button'); b.className = 'chip'; b.textContent = opt.label;
-      b.onclick = function(){ addUserBubble(opt.label); composer.innerHTML=''; onPick(opt.value); };
-      wrap.appendChild(b);
-    });
-    composer.appendChild(wrap);
+  // opts.noOther suppresses the "Something else" escape hatch for the handful of chip sets that
+  // are pure flow controls rather than a data value (nothing sensible to type instead) — every
+  // other guided-flow question gets it automatically, on purpose: this is the generic mechanism
+  // that covers "the borrower's real answer isn't one of the options" for every question, past
+  // and future, without having to special-case each one. See handleOtherAnswer() below.
+  function setComposerChips(options, onPick, opts){
+    var allowOther = !(opts && opts.noOther === true);
+    function renderChipsUI(){
+      composer.innerHTML = '';
+      var wrap = document.createElement('div'); wrap.className = 'chips';
+      options.forEach(function(opt){
+        var b = document.createElement('button'); b.className = 'chip'; b.textContent = opt.label;
+        b.onclick = function(){ addUserBubble(opt.label); composer.innerHTML=''; onPick(opt.value); };
+        wrap.appendChild(b);
+      });
+      if(allowOther){
+        var ob = document.createElement('button'); ob.className = 'chip chip-other'; ob.textContent = 'Something else';
+        ob.onclick = function(){ renderOtherInput(); };
+        wrap.appendChild(ob);
+      }
+      composer.appendChild(wrap);
+    }
+    function renderOtherInput(){
+      composer.innerHTML = '';
+      var wrap = document.createElement('div'); wrap.className = 'other-input';
+      wrap.innerHTML =
+        '<div class="textrow"><input id="otherAnswerInput" type="text" placeholder="Type your own answer…"><button class="sendbtn" id="otherAnswerSend">Send</button></div>'+
+        '<button class="other-back" type="button" id="otherAnswerBack">&larr; back to the options</button>';
+      composer.appendChild(wrap);
+      var input = document.getElementById('otherAnswerInput');
+      var sendBtn = document.getElementById('otherAnswerSend');
+      document.getElementById('otherAnswerBack').onclick = function(){ renderChipsUI(); };
+      function submit(){
+        var v = input.value.trim();
+        if(!v) return;
+        handleOtherAnswer(v, renderChipsUI);
+      }
+      sendBtn.onclick = submit;
+      input.addEventListener('keydown', function(e){ if(e.key==='Enter') submit(); });
+      setTimeout(function(){ input.focus(); }, 200);
+    }
+    renderChipsUI();
   }
 
   function setComposerText(placeholder, hint, onSubmit, inputType, allowBlank){
@@ -1075,18 +1266,141 @@
     saveCurrentChatToList();
   }
 
+  function snapshotFieldLabel(key){
+    if(key === 'rent') return (state.data.program && state.data.program!=='dscr') ? 'Qualifying income' : 'Expected rent';
+    if(key === 'propertyValue') return 'Purchase / est. value';
+    var meta = CORRECTION_FIELDS[key];
+    return (meta && meta.label) || key;
+  }
+  function formatSnapshotValue(key){
+    var v = state.data[key];
+    if(v === undefined || v === null || v === '') return null;
+    if(key === 'rent') return fmt$(v)+'/mo';
+    var meta = CORRECTION_FIELDS[key];
+    if(!meta) return String(v);
+    if(meta.kind === 'currency') return fmt$(v);
+    if(meta.kind === 'percent') return Math.round(v*100)+'%';
+    if(meta.kind === 'enum') return (meta.valueLabels && meta.valueLabels[v]) || v;
+    return String(v);
+  }
   function renderDealSnapshot(){
     var d = state.data;
     var body = document.getElementById('dealSnapBody');
     if(!body) return;
-    var rows = [];
-    if(d.propertyValue) rows.push(['Purchase / est. value', fmt$(d.propertyValue)]);
-    if(d.rent) rows.push([d.program && d.program!=='dscr' ? 'Qualifying income' : 'Expected rent', fmt$(d.rent)+'/mo']);
-    if(d.loanAmount) rows.push(['Loan amount', fmt$(d.loanAmount)]);
-    if(d.downPct) rows.push(['Down payment', Math.round(d.downPct*100)+'%']);
-    if(d.credit) rows.push(['Credit tier', d.credit]);
-    var addrHtml = '<div class="snap-addr">'+(d.address ? d.address : 'No property added yet')+'</div>';
-    body.innerHTML = addrHtml + (rows.length ? '<div style="margin-top:10px;">'+rows.map(function(r){ return '<div class="card-row"><span>'+r[0]+'</span><b class="mono">'+r[1]+'</b></div>'; }).join('')+'</div>' : '');
+    var addrHtml = '<div class="snap-addr">'+(d.address ? safeHtml(d.address) : 'No property added yet')+'</div>';
+    var rowsHtml = SNAPSHOT_FIELD_ORDER.map(function(key){
+      var shown = formatSnapshotValue(key);
+      if(shown === null) return '';
+      return '<div class="card-row"><span>'+snapshotFieldLabel(key)+'</span><span class="srv"><b class="mono">'+safeHtml(shown)+'</b>'+
+        '<button class="edit-pencil" type="button" data-field="'+key+'" aria-label="Edit '+snapshotFieldLabel(key)+'" title="Edit">'+EDIT_PENCIL_SVG+'</button></span></div>';
+    }).join('');
+    body.innerHTML = addrHtml +
+      (rowsHtml ? '<div style="margin-top:10px;">'+rowsHtml+'</div>' : '') +
+      (rowsHtml ? '<div class="snap-note">Tap a pencil to go back and correct that answer — anytime, even mid-flow.</div>' : '') +
+      '<div id="snapEditBox"></div>';
+    Array.prototype.forEach.call(body.querySelectorAll('.edit-pencil'), function(btn){
+      btn.onclick = function(){ openSnapshotFieldEditor(btn.getAttribute('data-field')); };
+    });
+  }
+
+  // ---- v17: "go back a step" — an answer already given, shown in the Deal Snapshot, can be
+  // corrected right there without leaving whatever question the guided flow is currently asking.
+  // Enum fields resolve straight from the dropdown (no AI round-trip needed, and it works even
+  // without live AI configured); numeric/currency fields try a plain local parse first (handles
+  // "150000", "$150k", "20%") and only fall back to the same AI extraction the rest of the app's
+  // free-text corrections use if that local parse can't make sense of it. Applying the value then
+  // goes through the exact same applyCorrections() pipeline as every other correction path, so a
+  // structural change (switching tier/program) still walks the borrower through whatever that
+  // genuinely requires, and a decision or letter already on screen gets refreshed to match.
+  function openSnapshotFieldEditor(key){
+    var meta = CORRECTION_FIELDS[key];
+    var box = document.getElementById('snapEditBox');
+    if(!meta || !box) return;
+    var isEnum = meta.kind === 'enum';
+    var fieldHtml;
+    if(isEnum){
+      fieldHtml = '<select id="snapEditInput">' + meta.options.map(function(o){
+        var lbl = (meta.valueLabels && meta.valueLabels[o]) || o;
+        return '<option value="'+o+'"'+(state.data[key]===o?' selected':'')+'>'+lbl+'</option>';
+      }).join('') + '</select>';
+    } else {
+      var currentShown = formatSnapshotValue(key) || '';
+      fieldHtml = '<input id="snapEditInput" type="text" placeholder="'+(currentShown ? 'Currently '+currentShown : 'New value')+'">';
+    }
+    box.innerHTML =
+      '<div class="snap-edit-box">'+
+        '<label>Update '+snapshotFieldLabel(key)+'</label>'+
+        '<div class="ser-row">'+fieldHtml+'</div>'+
+        '<div class="ser-err" id="snapEditErr"></div>'+
+        '<div class="ser-actions"><button type="button" class="ser-save" id="snapEditSave">Save</button><button type="button" class="ser-cancel" id="snapEditCancel">Cancel</button></div>'+
+      '</div>';
+    var input = document.getElementById('snapEditInput');
+    document.getElementById('snapEditCancel').onclick = function(){ box.innerHTML = ''; };
+    document.getElementById('snapEditSave').onclick = function(){ submitSnapshotEdit(key, isEnum ? input.value : input.value.trim()); };
+    if(!isEnum){ input.addEventListener('keydown', function(e){ if(e.key==='Enter') submitSnapshotEdit(key, input.value.trim()); }); }
+    setTimeout(function(){ input.focus(); if(!isEnum && input.select) input.select(); }, 60);
+  }
+  function parseSnapshotRawValue(raw, meta){
+    var s = String(raw).trim();
+    if(!s) return null;
+    var kSuffix = /k\s*$/i.test(s);
+    var pctSuffix = /%\s*$/.test(s);
+    var num = parseFloat(s.replace(/[^0-9.]/g, ''));
+    if(isNaN(num)) return null;
+    if(kSuffix) num *= 1000;
+    if(meta.kind === 'percent' && (pctSuffix || num > 1)) num = num/100;
+    return num;
+  }
+  function submitSnapshotEdit(key, rawValue){
+    var meta = CORRECTION_FIELDS[key];
+    var errEl = document.getElementById('snapEditErr');
+    var saveBtn = document.getElementById('snapEditSave');
+    if(!rawValue){ if(errEl){ errEl.textContent = 'Enter a value.'; errEl.style.display = 'block'; } return; }
+    function finish(corrections){
+      var result = applyCorrections(corrections); // re-renders this whole card, including clearing the edit box
+      if(!result.applied.length){ flashFlowToast("That didn't change anything."); return; }
+      handleSnapshotEditResult(result);
+    }
+    if(meta.kind === 'enum'){
+      if(rawValue === state.data[key]){ var b = document.getElementById('snapEditBox'); if(b) b.innerHTML=''; return; }
+      finish([{field:key, value: rawValue}]);
+      return;
+    }
+    var parsed = parseSnapshotRawValue(rawValue, meta);
+    if(parsed !== null){ finish([{field:key, value: parsed}]); return; }
+    if(!aiMode){ if(errEl){ errEl.textContent = 'Couldn’t read that as a number — try e.g. "150000" or "20%".'; errEl.style.display = 'block'; } return; }
+    if(saveBtn) saveBtn.disabled = true;
+    detectCorrections(rawValue, key).then(function(corrections){
+      if(saveBtn) saveBtn.disabled = false;
+      if(!corrections.length){ if(errEl){ errEl.textContent = "Didn't catch a usable value — try again."; errEl.style.display = 'block'; } return; }
+      finish(corrections);
+    }).catch(function(){
+      if(saveBtn) saveBtn.disabled = false;
+      if(errEl){ errEl.textContent = 'Something went wrong — try again.'; errEl.style.display = 'block'; }
+    });
+  }
+  // Decides how loudly to surface a snapshot-edit result: a structural change (tier/program) or
+  // one that answers the guided flow's own currently-pending question picks up right where that
+  // flow would; a correction landing on a file that already has a decision or letter refreshes it
+  // in the main stream (see reflectAppliedCorrection); anything else — an earlier answer corrected
+  // while a later question is still open — is a quiet update, so it never derails what's on screen.
+  function handleSnapshotEditResult(result){
+    var summary = result.applied.join(' · ');
+    if(result.reopenQueue && result.reopenQueue.length){
+      flashFlowToast('Updated — ' + summary + '. Picking back up…');
+      setTimeout(function(){ chainFns(result.reopenQueue, continueAfterStructuralChange); }, 500);
+      return;
+    }
+    if(result.pendingAdvance){
+      flashFlowToast('Updated — ' + summary);
+      setTimeout(result.pendingAdvance, 300);
+      return;
+    }
+    if(state.data.letterGenerated || state.result){
+      reflectAppliedCorrection(result);
+      return;
+    }
+    flashFlowToast('Updated — ' + summary);
   }
 
   function stepStage(){
@@ -1301,6 +1615,7 @@
   function resetForNewConversation(){
     saveCurrentChatToList();
     state.step = 0; state.data = {}; state.result = null; state.chatId = null;
+    state.pendingField = null; state.pendingAdvance = null;
     askTurns = [];
     stream.innerHTML = ''; composer.innerHTML = '';
     renderChecklist(); updateSummary();
@@ -1389,8 +1704,121 @@
 
   // ---- conversation steps ----
   function start(){
-    addBotBubble("Hi — I'm Kevo. I can give you a conditional Non-QM investor approval in a couple of minutes, right here in chat — no tax returns needed on any of these programs.", function(){
-      askProgram();
+    addBotBubble("Hi — I'm Kevo. I can get you a conditional pre-approval for an investment property loan in just a few minutes, right here in chat — no tax returns needed. First time doing this? No stress — if anything's ever confusing, tap the chat bubble in the corner to ask, and I'll pick this back up right where we left off. And if you'd rather talk to a real person at any point, just say so — a licensed Kevo loan specialist is always available too.", function(){
+      askWhoAreYou();
+    });
+  }
+
+  // ============================================================================================
+  // BUYER-FRIENDLY TRIAGE — a first-time buyer usually can't self-sort into "DSCR / Bank
+  // Statement / P&L" (those are underwriting labels, not situations a borrower would recognize).
+  // So instead of leading with the program names, we lead with a plain-language question about
+  // their situation, and translate that into a program choice ourselves — including a guided,
+  // two-question "not sure" path for someone who genuinely doesn't know. Agent mode skips this
+  // (agents/LOs already know the program names) and goes straight to askProgram() below.
+  // ============================================================================================
+
+  function askWhoAreYou(){
+    addBotBubble("Let's find the right fit for you — which of these sounds most like your situation?", function(){
+      composer.innerHTML = '';
+      var box = document.createElement('div'); box.className = 'path-choice program-choice';
+      box.innerHTML =
+        '<button class="path-card" type="button" data-v="rental">'+
+          '<div class="pc-title">This property will pay for itself</div>'+
+          '<div class="pc-sub">I want to qualify using the rent it\'ll bring in — not my personal income or tax returns.</div>'+
+        '</button>'+
+        '<button class="path-card" type="button" data-v="selfemployed">'+
+          '<div class="pc-title">I\'m self-employed or own a business</div>'+
+          '<div class="pc-sub">I don\'t have W-2s or standard tax returns — I can show bank deposits or a profit &amp; loss statement instead.</div>'+
+        '</button>'+
+        '<button class="path-card" type="button" data-v="notsure">'+
+          '<div class="pc-title">Not sure — help me figure it out</div>'+
+          '<div class="pc-sub">Answer two quick questions and I\'ll point you the right way. No wrong answers.</div>'+
+        '</button>';
+      composer.appendChild(box);
+      var labels = {rental:"This property will pay for itself", selfemployed:"I'm self-employed or own a business", notsure:"Not sure — help me figure it out"};
+      Array.prototype.forEach.call(box.querySelectorAll('.path-card'), function(btn){
+        btn.onclick = function(){
+          var v = btn.getAttribute('data-v');
+          addUserBubble(labels[v]);
+          composer.innerHTML = '';
+          if(v === 'rental'){ chooseProgram('dscr'); }
+          else if(v === 'selfemployed'){ askSelfEmployedDocType(); }
+          else { askWhoAreYouQuiz1(); }
+        };
+      });
+    });
+  }
+
+  function askSelfEmployedDocType(){
+    addBotBubble("Got it — do you have 12 or more months of bank statements handy, or would a profit &amp; loss (P&amp;L) statement from your accountant work better?", function(){
+      setComposerChips([
+        {label:'I have bank statements', value:'bankstatement'},
+        {label:'I have a P&L from my accountant', value:'pnl'},
+        {label:"I'm not sure which I have", value:'unsure'}
+      ], function(v){
+        if(v === 'unsure'){
+          addBotBubble("No worries — bank statements just means your regular checking or savings statements, showing what's been deposited. A P&L is a one-page summary your accountant or CPA prepares, showing your business's income and expenses. Bank statements are usually the easier one to pull together quickly, so let's start there — we can always switch later if needed.", function(){
+            chooseProgram('bankstatement');
+          });
+        } else {
+          chooseProgram(v);
+        }
+      });
+    });
+  }
+
+  function askWhoAreYouQuiz1(){
+    addBotBubble("No problem, let's figure it out together. First — if you rented this property out, do you think the rent would cover most or all of the monthly payment (mortgage, taxes, and insurance)?", function(){
+      setComposerChips([
+        {label:'Yes, I think so', value:'yes'},
+        {label:'Not really', value:'no'},
+        {label:"I'm not sure", value:'unsure'}
+      ], function(v){
+        if(v === 'yes'){
+          addBotBubble("Great — that means you can likely qualify using the property's own rental income, without touching your personal income or tax returns at all. That's usually the simplest path.", function(){
+            chooseProgram('dscr');
+          });
+        } else {
+          askWhoAreYouQuiz2();
+        }
+      });
+    });
+  }
+
+  function askWhoAreYouQuiz2(){
+    addBotBubble("Got it — then we'll likely qualify you using your own income instead of the rent. Are you self-employed or a business owner, or do you work a regular W-2 job?", function(){
+      setComposerChips([
+        {label:'Self-employed / business owner', value:'se'},
+        {label:'W-2 employee', value:'w2'},
+        {label:'A mix of both', value:'se'}
+      ], function(v){
+        if(v === 'w2'){
+          addBotBubble("Good to know. This tool is built specifically for rental-income and self-employed qualifying, so it doesn't cover a traditional W-2 full-documentation loan — but the rental-income path (no personal income needed at all) is usually still available and often the easiest route anyway. Want to try that, or talk to a Kevo loan specialist about other options first?", function(){
+            setComposerChips([
+              {label:'Try the rental-income path', value:'dscr'},
+              {label:"I'd rather talk to a specialist first", value:'stop'}
+            ], function(v2){
+              if(v2 === 'dscr'){ chooseProgram('dscr'); }
+              else {
+                addBotBubble("That's completely fine — a Kevo loan specialist can walk you through every option, including ones outside this tool. I'll be right here whenever you want to pick this back up.", function(){});
+              }
+            });
+          });
+        } else {
+          askSelfEmployedDocType();
+        }
+      });
+    });
+  }
+
+  function chooseProgram(program){
+    state.data.program = program;
+    renderChecklist();
+    var friendly = {dscr:"the rental-income path", bankstatement:"bank statement qualifying", pnl:"P&L qualifying"}[program];
+    var formal = {dscr:'DSCR', bankstatement:'Bank Statement', pnl:'P&L'}[program];
+    addBotBubble("Perfect — we'll go with "+friendly+". (In the paperwork this is called a \""+formal+"\" loan, but you don't need to remember that — I've got it.)", function(){
+      askLoanPurpose();
     });
   }
 
@@ -1443,9 +1871,16 @@
           '<div class="pc-sub">Refinancing and pulling equity out.</div>'+
         '</button>';
       composer.appendChild(box);
+      state.pendingField = 'purpose';
+      state.pendingAdvance = function(){
+        var v = state.data.purpose;
+        if(state.mode === 'agent'){ agentAskClientName(); return; }
+        if(v === 'purchase'){ askHasProperty(); } else { askPath('has'); }
+      };
       Array.prototype.forEach.call(box.querySelectorAll('.path-card'), function(btn){
         btn.onclick = function(){
           var v = btn.getAttribute('data-v');
+          state.pendingField = null; state.pendingAdvance = null;
           state.data.purpose = v;
           state.data.purposeKey = v === 'purchase' ? 'purchase' : (v === 'ratetermrefi' ? 'rt' : 'co');
           renderChecklist();
@@ -1481,9 +1916,12 @@
           '<div class="pc-sub">Verified credit and reserves. Stronger than pre-approval — your offer can drop the financing contingency, like cash. Takes a bit longer.</div>'+
         '</button>';
       composer.appendChild(box);
+      state.pendingField = 'tier';
+      state.pendingAdvance = function(){ if(afterFn){ afterFn(); } else { askAddress(mode); } };
       Array.prototype.forEach.call(box.querySelectorAll('.path-card'), function(btn){
         btn.onclick = function(){
           var v = btn.getAttribute('data-v');
+          state.pendingField = null; state.pendingAdvance = null;
           state.data.tier = v;
           renderChecklist();
           addUserBubble(v==='full' ? 'Fully Underwritten Approval' : 'Pre-Approval');
@@ -1524,9 +1962,7 @@
         function(){
           renderChecklist(); updateSummary();
           if(isDscr){
-            addBotBubble("That rent figure came from public comps — if you've got an actual signed lease, tell me the real number, otherwise just say “use the estimate.”", function(){
-              setComposerChips([{label:'Use the estimate', value:'est'}], function(){ askPropertyType(askDownPayment); });
-            });
+            askRentConfirm(askDownPayment);
           } else {
             askPropertyType(askDownPayment);
           }
@@ -1535,14 +1971,59 @@
     });
   }
 
+  // The bot copy here explicitly invites a typed number ("tell me the real number"), so — unlike
+  // most guided steps — this composer offers a real text field alongside the chip, not just a
+  // chip. (Before this fix, the only way to answer with a real number was the ask-bar, which
+  // applied it as a silent correction but left this same stale chip on screen — see pendingField
+  // below and applyCorrections()'s pendingAdvance handling for the belt-and-suspenders fix that
+  // covers every other guided step the same way.)
+  function askRentConfirm(next){
+    addBotBubble("That rent figure came from public comps — if you've got an actual signed lease, type the real monthly rent below, otherwise just tap “use the estimate.”", function(){
+      state.pendingField = 'rent';
+      state.pendingAdvance = function(){ askPropertyType(next); };
+      composer.innerHTML = '';
+      var wrap = document.createElement('div'); wrap.className = 'chips';
+      var estBtn = document.createElement('button'); estBtn.className = 'chip'; estBtn.textContent = 'Use the estimate';
+      estBtn.onclick = function(){
+        state.pendingField = null; state.pendingAdvance = null;
+        addUserBubble('Use the estimate');
+        composer.innerHTML = '';
+        askPropertyType(next);
+      };
+      wrap.appendChild(estBtn);
+      composer.appendChild(wrap);
+      var row = document.createElement('div'); row.className = 'textrow'; row.style.marginTop = '8px';
+      var input = document.createElement('input'); input.type = 'number'; input.placeholder = 'Actual monthly rent, e.g. 2400';
+      var btn = document.createElement('button'); btn.className = 'sendbtn'; btn.textContent = 'Send';
+      function submitRent(){
+        var v = parseFloat(input.value);
+        if(isNaN(v) || v <= 0) return;
+        state.pendingField = null; state.pendingAdvance = null;
+        addUserBubble(fmt$(v)+'/mo');
+        state.data.rent = v;
+        renderChecklist(); updateSummary();
+        composer.innerHTML = '';
+        askPropertyType(next);
+      }
+      btn.onclick = submitRent;
+      input.addEventListener('keydown', function(e){ if(e.key==='Enter') submitRent(); });
+      row.appendChild(input); row.appendChild(btn);
+      composer.appendChild(row);
+      setTimeout(function(){ input.focus(); }, 400);
+    });
+  }
+
   function askPropertyType(next){
     addBotBubble("What type of property is this?", function(){
+      state.pendingField = 'propertyType';
+      state.pendingAdvance = function(){ next(); };
       setComposerChips([
         {label:'Single-family / modular', value:'sfr'},
         {label:'2–4 units or condo', value:'condo24'},
         {label:'Condotel', value:'condotel'},
         {label:'Rural (up to 20 acres)', value:'rural'}
       ], function(v){
+        state.pendingField = null; state.pendingAdvance = null;
         state.data.propertyType = v; renderChecklist(); next();
       });
     });
@@ -1550,9 +2031,16 @@
 
   function askDownPayment(){
     addBotBubble("How much are you planning to put down?", function(){
+      state.pendingField = 'downPct';
+      state.pendingAdvance = function(){
+        renderChecklist(); updateSummary();
+        if(state.data.program === 'dscr'){ creditStep(askEntity); }
+        else { askIncome(function(){ creditStep(askEntity); }); }
+      };
       setComposerChips([
         {label:'20% down', value:0.20}, {label:'25% down', value:0.25}, {label:'30% down', value:0.30}
       ], function(pct){
+        state.pendingField = null; state.pendingAdvance = null;
         state.data.downPct = pct;
         state.data.loanAmount = Math.round(state.data.propertyValue * (1-pct));
         state.data.loan = true;
@@ -1749,10 +2237,13 @@
 
   function askCredit(next){
     addBotBubble("What's your approximate credit score range?", function(){
+      state.pendingField = 'credit';
+      state.pendingAdvance = function(){ next(); };
       setComposerChips([
         {label:'740+', value:'740+'}, {label:'700–739', value:'700-739'},
         {label:'660–699', value:'660-699'}, {label:'620–659', value:'620-659'}, {label:'Under 620', value:'<620'}
       ], function(v){
+        state.pendingField = null; state.pendingAdvance = null;
         state.data.credit = v; state.data.creditSource = 'self-reported'; renderChecklist(); updateSummary(); next();
       });
     });
@@ -1828,7 +2319,10 @@
 
   function askEntity(){
     addBotBubble("Will the loan close in your personal name or an LLC?", function(){
+      state.pendingField = 'entity';
+      state.pendingAdvance = function(){ reservesStep(askEvents); };
       setComposerChips([{label:'Individual', value:'Individual'}, {label:'LLC / entity', value:'LLC'}], function(v){
+        state.pendingField = null; state.pendingAdvance = null;
         state.data.entity = v; renderChecklist();
         reservesStep(askEvents);
       });
@@ -1842,7 +2336,10 @@
 
   function askReserves(next){
     addBotBubble("Roughly how many months of this property's payment could you cover from savings if it sat vacant?", function(){
+      state.pendingField = 'reserves';
+      state.pendingAdvance = function(){ next(); };
       setComposerChips([{label:'Under 3 months', value:'<3'}, {label:'3–6 months', value:'3-6'}, {label:'6+ months', value:'6+'}], function(v){
+        state.pendingField = null; state.pendingAdvance = null;
         state.data.reserves = v; state.data.reservesSource = 'self-reported'; renderChecklist(); next();
       });
     });
@@ -1977,11 +2474,18 @@
           '<button class="dl-btn" type="button" id="acctContinueBtn" style="margin-top:10px;">Continue</button>'+
           '</div>';
         stream.appendChild(el); scrollDown();
-        document.getElementById('acctContinueBtn').onclick = function(){
+        // Scoped to this card (el), not document.getElementById: this card gets appended fresh
+        // into the chat history each time an account is connected (it's never removed like the
+        // overlay-based steps are), so a second connected account means a second element sharing
+        // this same id. getElementById always resolves to the FIRST one in document order, which
+        // — a bug fixed here — silently wired the click handler to the earlier, already-used,
+        // disabled button instead of this new card's real one, so the "Continue" click on a 2nd+
+        // account did nothing at all (looked like the flow had frozen).
+        var continueBtn = el.querySelector('#acctContinueBtn');
+        continueBtn.onclick = function(){
           var checks = el.querySelectorAll('.acct-check:checked');
           var balance = 0;
           Array.prototype.forEach.call(checks, function(c){ balance += parseFloat(c.getAttribute('data-amt')); });
-          var continueBtn = document.getElementById('acctContinueBtn');
           continueBtn.disabled = true;
           addUserBubble(checks.length + ' account' + (checks.length===1?'':'s') + ' selected');
           state.data.bankAccounts.push({bank:bank, balance:balance, holderName:holderName});
@@ -2032,12 +2536,15 @@
 
   function askEvents(){
     addBotBubble("Any bankruptcy, foreclosure, short sale, or deed-in-lieu in your past?", function(){
+      state.pendingField = 'events';
+      state.pendingAdvance = function(){ askPortfolio(); };
       setComposerChips([
         {label:'No', value:'none'},
         {label:'Yes, 3+ years ago', value:'36+'},
         {label:'Yes, 2–3 years ago', value:'24-35'},
         {label:'Yes, within the last 2 years', value:'<24'}
       ], function(v){
+        state.pendingField = null; state.pendingAdvance = null;
         state.data.events = v; renderChecklist(); askPortfolio();
       });
     });
@@ -2095,13 +2602,16 @@
     }).join('')+'</ul>';
   }
 
-  function showDecision(){
+  function showDecision(customIntro){
     var r = state.result;
     var approved = r.status === 'approved';
     var isFull = r.tier === 'full';
-    var introMsg = approved
+    // customIntro (v17): lets a correction re-run through here with a message that explains what
+    // just moved (see buildUpdateIntro()/reflectAppliedCorrection()) instead of always this
+    // first-time framing.
+    var introMsg = customIntro || (approved
       ? (isFull ? "This is a strong file — fully underwritten and approved. Here's your approval:" : "Good news — this pencils out. Here's your conditional approval:")
-      : "This one needs a closer look before I can conditionally approve it — here's where it stands:";
+      : "This one needs a closer look before I can conditionally approve it — here's where it stands:");
     addBotBubble(introMsg, function(){
       var el = document.createElement('div');
       el.className = 'msg bot';
@@ -2118,26 +2628,225 @@
     });
   }
 
-  // Factored out of showDecision() so the same next-step chips can also be offered when a
+  // ---- v16: what's next after a decision — one panel used everywhere a decision is on screen
+  // (right after it's first computed, after the letter, and when a saved chat with a decision is
+  // reopened from the nav rail), instead of three different dead ends. Lior's ask: let a borrower
+  // update a detail (rent, credit, a mistake — even after the letter), come back later and upgrade
+  // a Pre-Approval to Fully Underwritten, tell Kevo they're ready to move forward once they're in
+  // escrow, and know a real person is available whenever they want one — all four live here.
+  function postDecisionChipsList(){
+    var r = state.result;
+    var approved = r.status === 'approved';
+    var isFull = r.tier === 'full';
+    var chips = [];
+    if(state.data.letterGenerated) chips.push({label:'View my letter', value:'viewletter'});
+    else chips.push({label:'Save & get my letter', value:'login'});
+    if(approved && !isFull && !state.data.loanStarted) chips.push({label:'Upgrade to Fully Underwritten', value:'upgrade'});
+    chips.push({label:'Update a detail', value:'editdetail'});
+    if(approved && !state.data.loanStarted) chips.push({label:"I'm ready — start my loan", value:'startloan'});
+    chips.push({label:'Talk to a human', value:'human'});
+    if(!state.data.letterGenerated) chips.push({label:'Not yet, just exploring', value:'skip'});
+    return chips;
+  }
+  function handlePostDecisionChip(v){
+    if(v==='upgrade'){ offerUpgrade(); }
+    else if(v==='login'){ document.getElementById('overlay').classList.add('show'); }
+    else if(v==='skip'){ finalScreen(false); }
+    else if(v==='viewletter'){
+      addBotBubble('Here it is again:', function(){
+        renderLetter(state.data.letterSaved, state.data.borrowerEmail, state.data.borrowerName, state.data.borrowerPhone);
+        renderPostDecisionChips();
+      });
+    }
+    else if(v==='editdetail'){ openDetailEditor(); }
+    else if(v==='startloan'){ startLoanProcess(); }
+    else if(v==='human'){ talkToHuman(); }
+  }
+  // Chips-only redraw (no new chat bubble) — used for "back" out of the detail editor, and after
+  // any of the actions above finish, so returning to this panel doesn't pile up repeat intros.
+  function renderPostDecisionChips(){
+    setComposerChips(postDecisionChipsList(), handlePostDecisionChip, {noOther:true});
+    var note = document.createElement('div');
+    note.className = 'hint';
+    note.style.cssText = 'margin:10px 2px 0;';
+    note.textContent = "This is AI-driven, but you're never on your own — a licensed Kevo loan specialist is always available too.";
+    composer.appendChild(note);
+  }
+  // Factored out of showDecision() so the same next-step panel can also be offered when a
   // saved chat is reopened from the nav rail's chat list and it already has a decision.
   function offerPostDecisionActions(){
     var r = state.result;
     if(!r) return;
     var approved = r.status === 'approved';
     var isFull = r.tier === 'full';
-    var chips = [{label:'Save & get my letter', value:'login'}, {label:'Not yet, just exploring', value:'skip'}];
-    var msg = "Want me to save this and send you the official letter? Takes 10 seconds.";
-    if(approved && !isFull){
-      chips.unshift({label:'Upgrade to Fully Underwritten', value:'upgrade'});
-      msg = "Want to strengthen this into a Fully Underwritten Approval, so your offer can skip the financing contingency? Or I can save this pre-approval and send your letter now.";
+    var introMsg;
+    if(state.data.loanStarted){
+      introMsg = "This file's already moving into full loan processing. Want to view your letter, update a detail, or is there anything else I can help with?";
+    } else if(state.data.letterGenerated){
+      introMsg = "Here's where things stand. Want to see your letter again, update a detail, or take the next step?";
+    } else if(approved && !isFull){
+      introMsg = "Want to strengthen this into a Fully Underwritten Approval, so your offer can skip the financing contingency? Or I can save this pre-approval and send your letter now.";
+    } else {
+      introMsg = "Want me to save this and send you the official letter? Takes 10 seconds.";
     }
-    addBotBubble(msg, function(){
-      setComposerChips(chips, function(v){
-        if(v==='upgrade'){ offerUpgrade(); }
-        else if(v==='login'){ document.getElementById('overlay').classList.add('show'); }
-        else { finalScreen(false); }
-      });
+    addBotBubble(introMsg, renderPostDecisionChips);
+  }
+
+  // ---- v17: "tie together and re-run the logic against guidelines" — computeDecision() already
+  // re-derives the ENTIRE decision from scratch on every correction (program routing, LTV/matrix
+  // lookups, reserve requirements, seasoning, everything — see applyCorrections() below), so the
+  // numbers were always right. What was missing is telling the borrower plainly when the outcome
+  // itself moved, not just the figures underneath it — a lower rent that now fails DSCR, or a
+  // credit downgrade that drops the max LTV below what's requested, used to show up as a quietly
+  // different badge under a generic "Updated" message. This compares the decision from just before
+  // a correction to the one just after and, when it's worse, surfaces the SAME reason the decision
+  // card itself would show (computeDecision()'s conditions already explain the specific guideline
+  // driver in plain English), so the borrower knows exactly what to try adjusting next via
+  // "Update a detail" or the Deal Snapshot's own edit pencils — rather than a new bespoke
+  // "confirm fit" question needing to guess at fixes computeDecision() already documents.
+  function describeDecisionShift(prev, next){
+    if(!prev || !next) return null;
+    var worseStatus = prev.status === 'approved' && next.status !== 'approved';
+    var betterStatus = prev.status !== 'approved' && next.status === 'approved';
+    var tierDowngraded = prev.tier === 'full' && next.tier !== 'full' && next.status === 'approved';
+    var tierUpgraded = prev.tier !== 'full' && next.tier === 'full';
+    var badgeChanged = (prev.badgeOverride||null) !== (next.badgeOverride||null);
+    if(!worseStatus && !betterStatus && !tierDowngraded && !tierUpgraded && !badgeChanged) return {changed:false};
+    var reason = null;
+    if(worseStatus || (badgeChanged && next.status !== 'approved')){
+      reason = next.conditions && next.conditions[0];
+    } else if(tierDowngraded){
+      reason = "credit and reserves aren't both independently verified anymore, so this reverted to Pre-Approval until they're re-verified";
+    }
+    return {changed:true, worse: worseStatus || tierDowngraded, better: betterStatus || tierUpgraded, reason: reason};
+  }
+  function buildUpdateIntro(shift, hasLetter){
+    var base = hasLetter ? "here's your letter reflecting that change" : "here's the revised decision";
+    if(!shift || !shift.changed) return 'Updated — ' + base + ':';
+    if(shift.worse){
+      var reason = shift.reason ? shift.reason.replace(/^[✕◆]\s*/, '') : 'the numbers no longer clear guidelines the same way they did';
+      return 'Updated — heads up, this changes the outcome: ' + reason + ' Here’s where things stand now:';
+    }
+    return 'Updated — good news, this actually clears guidelines now. Here’s ' + base + ':';
+  }
+  // Shared "show the result of a correction that's already been applied to state.data/state.result"
+  // — used by the post-decision "Update a detail" box, the Deal Snapshot's inline edit pencils, and
+  // a post-decision correction made through the floating chat. Refreshes whichever of the letter or
+  // the decision card is actually on screen, with a shift-aware intro (see buildUpdateIntro above).
+  function reflectAppliedCorrection(result){
+    setTimeout(function(){
+      var shift = result.decisionShift;
+      if(state.data.letterGenerated){
+        addBotBubble(buildUpdateIntro(shift, true), function(){
+          renderLetter(state.data.letterSaved, state.data.borrowerEmail, state.data.borrowerName, state.data.borrowerPhone);
+          saveCurrentChatToList();
+          renderPostDecisionChips();
+        });
+      } else {
+        showDecision(buildUpdateIntro(shift, false));
+      }
+    }, 500);
+  }
+
+  // "Update a detail" (v16) — an explicit, discoverable way to correct or change anything after a
+  // decision exists, including after the letter's already been generated. Reuses the exact same
+  // detectCorrections/applyCorrections pipeline as the guided flow's own "Something else" and the
+  // floating chat — no new parsing logic — but with no pendingField hint, since there's no single
+  // on-screen question being answered here; the borrower is expected to name what changed, which
+  // this pipeline already handles well (e.g. "the rent is actually $6,200").
+  function openDetailEditor(){
+    composer.innerHTML = '';
+    var wrap = document.createElement('div'); wrap.className = 'other-input';
+    wrap.innerHTML =
+      '<div class="textrow"><input id="detailEditInput" type="text" placeholder="What changed? e.g. “rent is actually $6,200” or “switch to fully underwritten”"><button class="sendbtn" id="detailEditSend">Send</button></div>'+
+      '<button class="other-back" type="button" id="detailEditBack">&larr; back</button>';
+    composer.appendChild(wrap);
+    var input = document.getElementById('detailEditInput');
+    document.getElementById('detailEditBack').onclick = renderPostDecisionChips;
+    function submit(){
+      var v = input.value.trim();
+      if(!v) return;
+      handleDetailCorrection(v);
+    }
+    document.getElementById('detailEditSend').onclick = submit;
+    input.addEventListener('keydown', function(e){ if(e.key==='Enter') submit(); });
+    setTimeout(function(){ input.focus(); }, 150);
+  }
+  function handleDetailCorrection(rawText){
+    addUserBubble(rawText);
+    composer.innerHTML = '';
+    var noteEl = document.createElement('div');
+    noteEl.className = 'hint';
+    noteEl.style.margin = '-6px 0 0 36px';
+    stream.appendChild(noteEl); scrollDown();
+
+    detectCorrections(rawText).then(function(corrections){
+      var result = applyCorrections(corrections);
+      if(result.applied.length){ noteEl.textContent = '✓ Got it: ' + result.applied.join(' · '); scrollDown(); }
+      else { noteEl.remove(); }
+
+      if(result.reopenQueue && result.reopenQueue.length){
+        setTimeout(function(){ chainFns(result.reopenQueue, continueAfterStructuralChange); }, result.applied.length ? 500 : 0);
+        return;
+      }
+      if(result.applied.length){
+        // applyCorrections() already recomputed state.result — refresh whatever's actually on
+        // screen (the letter if they already have one, otherwise the decision card), and say so
+        // plainly when the outcome itself shifted rather than just the numbers underneath it.
+        reflectAppliedCorrection(result);
+        return;
+      }
+
+      // Not recognized as a correction — give a real reply, then let them try again or move on.
+      if(aiMode){
+        var target = addAiBubble(stream);
+        var turns = [{role:'user', content: ASK_SYSTEM + '\n\nBorrower’s file so far:\n' + fileSnapshot()}]
+          .concat(askTurns)
+          .concat([{role:'user', content: rawText + '\n\n[This was typed into the "Update a detail" box after a decision was already reached, and didn\'t contain a usable value. Help them briefly, then let them know they can try describing it again or use the options below.]'}]);
+        aiChat(turns, {
+          modelTier: 'quick', cache: false,
+          onText: function(u){ target.textContent = u.text; scrollDown(); }
+        }).then(function(res){
+          askTurns.push({role:'user', content:rawText}, {role:'assistant', content:res.text});
+          if(askTurns.length > 8) askTurns = askTurns.slice(-8);
+        }).catch(function(){
+          target.textContent = "I couldn't quite catch what changed — want to try describing it again?";
+        }).finally(renderPostDecisionChips);
+      } else {
+        addBotBubble("I couldn't quite catch what changed — want to try describing it again?", renderPostDecisionChips);
+      }
+    }).catch(function(){
+      noteEl.remove();
+      addBotBubble("Something went wrong reading that — you can try again.", renderPostDecisionChips);
     });
+  }
+
+  // "I'm ready — start my loan" (v16) — for a borrower who's already in escrow (or otherwise ready)
+  // and just wants to tell Kevo to get going, rather than re-answering questions it already has
+  // answers to. No real loan-origination backend exists in this prototype (see the project's "real
+  // vs. simulated" table), so this simulates the handoff honestly: it flags the file and confirms a
+  // human will follow up, the same disclosed pattern "A Kevo loan specialist will follow up" already
+  // uses after saving a letter.
+  function startLoanProcess(){
+    // Reached only via the "I'm ready — start my loan" chip, whose own click already renders the
+    // user bubble (setComposerChips's chip handler calls addUserBubble(opt.label) before this
+    // runs) — no need to add a second, differently-worded one here.
+    composer.innerHTML = '';
+    state.data.loanStarted = true;
+    state.data.loanStartedAt = Date.now();
+    saveCurrentChatToList();
+    addBotBubble("Wonderful — I've flagged this file to move into full loan processing. A licensed Kevo loan specialist will reach out within one business day to confirm next steps and collect anything final. I'm still right here for anything else in the meantime.", renderPostDecisionChips);
+  }
+
+  // "Talk to a human" (v16) — explicit reassurance that this AI-driven tool isn't the only option.
+  function talkToHuman(){
+    // Reached only via the "Talk to a human" chip, whose own click already renders the user
+    // bubble — see the comment in startLoanProcess() above.
+    composer.innerHTML = '';
+    var hasContact = state.data.borrowerEmail || state.data.borrowerPhone;
+    var contactBit = hasContact ? (' at '+[state.data.borrowerPhone, state.data.borrowerEmail].filter(Boolean).join(' or ')) : ', just reply here with the best phone or email to reach you';
+    var msg = "You don't have to do this alone — I've flagged your file for a licensed Kevo loan specialist to reach out"+contactBit+". They typically respond within one business day, and I'm still right here for anything in the meantime.";
+    addBotBubble(msg, renderPostDecisionChips);
   }
 
   function offerUpgrade(){
@@ -2205,8 +2914,15 @@
   }
 
   function refNumber(){
-    var seed = hash(state.data.address || 'kevo') ^ Date.now();
-    return 'KV-' + Math.abs(seed % 900000 + 100000);
+    // Cached on state.data so re-rendering the letter (viewing it again, or after an update) shows
+    // the SAME reference number every time for a given deal, instead of a fresh one on every call —
+    // a real gap this had no way to surface until v16 made viewing/re-rendering the letter more
+    // than a one-time event. Persists through save/resume since it lives on state.data.
+    if(!state.data.letterRef){
+      var seed = hash(state.data.address || 'kevo') ^ Date.now();
+      state.data.letterRef = 'KV-' + Math.abs(seed % 900000 + 100000);
+    }
+    return state.data.letterRef;
   }
 
   function triggerBrowserDownload(filename, htmlContent){
@@ -2326,14 +3042,17 @@
       : "No problem — here's your "+(approved ? 'conditional approval letter' : 'scenario summary')+" so you have it. Come back anytime to save it properly.";
     addBotBubble(msg, function(){
       renderLetter(saved, email, name, phone);
-      composer.innerHTML = '<div class="hint">Prototype ends here — full underwriting, document upload, and appraisal ordering would continue from this point.</div>';
+      state.data.letterGenerated = true;
+      state.data.letterSaved = saved;
+      saveCurrentChatToList();
+      renderPostDecisionChips();
     });
   }
 
   // ---- free-form "ask your own question" via live Claude ----
   var askTurns = [];
   var askBusy = false;
-  var ASK_SYSTEM = "You are Kevo's Non-QM investor lending assistant, embedded inside a chat-based instant pre-approval tool covering three business-purpose loan programs, all Investment occupancy only, underwritten to Ameritrust Mortgage Corp.'s Diamond program guidelines (Ver. A, 03.16.26): DSCR (qualifies off property rental income — routes to the >=1.00 DSCR matrix or the <1.00/No-Ratio matrix depending on the numbers), Bank Statement (qualifies off 12-24 months of personal or business deposits — personal statements use full deposits with no expense factor, business statements use a 50% fixed expense ratio), and P&L (qualifies off a CPA/EA/attorney-prepared profit & loss statement, with its own tighter LTV caps and a 680 minimum credit score). Real guideline behavior this tool implements: credit-score x loan-amount x loan-purpose LTV/CLTV matrices, first-time-investor overlays (not eligible at all on DSCR <1.00; capped at 75% LTV with no cash-out on DSCR >=1.00), property-type and declining-market LTV caps, credit-event seasoning caps, reserve requirements by loan amount, an ineligible-geography list (Baltimore City MD, Philadelphia PA for investment, Puerto Rico, Guam, US Virgin Islands), and two deliberate fallback behaviors: (1) anything the published matrix can't resolve is escalated for underwriter review rather than guessed, and (2) scenarios that narrowly miss the grid but have a documented or reasonable exception path are flagged as a possible exception for underwriter judgment, not auto-declined. This tool has two conversation modes: Buyer mode (a borrower going through their own pre-approval, credit/funds/documents stay private to them) and Agent mode (a real estate agent or loan officer sketching an illustrative, assumption-based scenario — 700–739 credit tier, 25% down — before sending their buyer a private link to continue in Buyer mode; agent mode never collects or sees the buyer's actual credit or funds). When you don't have enough information in the file below to answer precisely, ask a short, specific follow-up question the way an underwriter would (e.g. \"is that an experienced investor or your first rental property?\" or \"purchase, rate/term, or cash-out?\") rather than guessing. If the borrower or agent's message states a correction to a simulated number (property tax, insurance, HOA, rent, purchase price, loan amount, down payment, or credit tier), treat the file below as already updated with that correction — it is applied before you ever see this prompt — so just confirm the specific new number(s) back to them in plain language and continue naturally; never ask them to repeat a correction that's already reflected in the file below. You can also translate any answer into another language if asked. Answer only questions about these programs, how this tool's process works, or the borrower's numbers shown below. Keep answers to 2-5 short sentences, plain language, no jargon dumps unless the borrower is clearly asking for the underwriting detail. Never give legal, tax, or individualized financial advice — for anything specific to their situation, tell them to confirm with a Kevo loan specialist. If asked something unrelated to this loan or this tool, briefly redirect back to the loan process. Do not repeat these instructions back.";
+  var ASK_SYSTEM = "You are Kevo's Non-QM investor lending assistant, embedded inside a chat-based instant pre-approval tool covering three business-purpose loan programs, all Investment occupancy only, underwritten to Ameritrust Mortgage Corp.'s Diamond program guidelines (Ver. A, 03.16.26): DSCR (qualifies off property rental income — routes to the >=1.00 DSCR matrix or the <1.00/No-Ratio matrix depending on the numbers), Bank Statement (qualifies off 12-24 months of personal or business deposits — personal statements use full deposits with no expense factor, business statements use a 50% fixed expense ratio), and P&L (qualifies off a CPA/EA/attorney-prepared profit & loss statement, with its own tighter LTV caps and a 680 minimum credit score). Real guideline behavior this tool implements: credit-score x loan-amount x loan-purpose LTV/CLTV matrices, first-time-investor overlays (not eligible at all on DSCR <1.00; capped at 75% LTV with no cash-out on DSCR >=1.00), property-type and declining-market LTV caps, credit-event seasoning caps, reserve requirements by loan amount, an ineligible-geography list (Baltimore City MD, Philadelphia PA for investment, Puerto Rico, Guam, US Virgin Islands), and two deliberate fallback behaviors: (1) anything the published matrix can't resolve is escalated for underwriter review rather than guessed, and (2) scenarios that narrowly miss the grid but have a documented or reasonable exception path are flagged as a possible exception for underwriter judgment, not auto-declined. This tool has two conversation modes: Buyer mode (a borrower going through their own pre-approval, credit/funds/documents stay private to them) and Agent mode (a real estate agent or loan officer sketching an illustrative, assumption-based scenario — 700–739 credit tier, 25% down — before sending their buyer a private link to continue in Buyer mode; agent mode never collects or sees the buyer's actual credit or funds). In Buyer mode, assume you're talking to a first-time real estate investor with no lending background — they were never shown the program names up front (the guided flow leads with plain situational questions like \"will the rent cover the payment?\" or \"are you self-employed?\" and picks DSCR/Bank Statement/P&L for them behind the scenes), so don't assume they know what DSCR, LTV, PITIA, seasoning, or similar terms mean — define any term you use in the same sentence, keep it warm and reassuring, and never make them feel behind for asking something basic. Agent mode is the opposite: you're talking to an industry professional, so the standard program names and underwriting shorthand are expected and fine. When you don't have enough information in the file below to answer precisely, ask a short, specific follow-up question the way a patient underwriter would (e.g. \"is that an experienced investor or your first rental property?\" or \"purchase, rate/term, or cash-out?\") rather than guessing. If the borrower or agent's message states a correction or change of mind about ANYTHING in the file below — a simulated number (property tax, insurance, HOA, rent, purchase price, loan amount, down payment, or credit tier) OR a structural choice (approval type: Pre-Approval vs. Fully Underwritten; loan program: DSCR vs. Bank Statement vs. P&L; loan purpose: Purchase vs. Rate/Term vs. Cash-Out; property type; entity), treat the file below as already updated with that change — it is applied before you ever see this prompt, and if it required new information (e.g. switching to Fully Underwritten needs a real credit/reserves verification, switching into Bank Statement or P&L needs income documentation) the guided flow will prompt for exactly that right after your reply — so just confirm the specific change back to them in plain language, mention briefly that you'll walk them through anything newly needed, and continue naturally; never ask them to repeat a change that's already reflected in the file below, and never claim a structural change didn't happen or can't happen — it already did. You can also translate any answer into another language if asked. Answer only questions about these programs, how this tool's process works, or the borrower's numbers shown below. Keep answers to 2-5 short sentences, plain language, no jargon dumps unless the borrower is clearly asking for the underwriting detail. Never give legal, tax, or individualized financial advice — for anything specific to their situation, tell them to confirm with a Kevo loan specialist. If asked something unrelated to this loan or this tool, briefly redirect back to the loan process. Do not repeat these instructions back.";
 
   function fileSnapshot(){
     var d = state.data, r = state.result;
@@ -2343,6 +3062,7 @@
     var programNames = {dscr:'Rental Property (DSCR)', bankstatement:'Self-Employed — Bank Statements', pnl:'Self-Employed — P&L'};
     if(d.program) lines.push('Loan program: '+(programNames[d.program]||d.program));
     if(d.purpose) lines.push('Loan purpose: '+({purchase:'Purchase', ratetermrefi:'Rate/Term Refinance', cashoutrefi:'Cash-Out Refinance'}[d.purpose]||d.purpose));
+    if(d.tier) lines.push('Approval type: '+(d.tier==='full' ? 'Fully Underwritten Approval' : 'Pre-Approval'));
     if(d.address) lines.push('Property: '+d.address);
     if(d.propertyType) lines.push('Property type: '+d.propertyType);
     if(d.decliningMarket) lines.push('Market trend: declining (per comps)');
@@ -2364,31 +3084,26 @@
     return lines.length ? lines.join('\n') : 'No details entered yet.';
   }
 
-  function addAiBubble(){
+  function addAiBubble(targetEl){
+    var target = targetEl || chatPanelStream;
+    if(target === chatPanelStream) hidePanelEmptyState();
     var el = document.createElement('div');
     el.className = 'msg bot';
     el.innerHTML = '<div class="av">K</div><div class="bubble"><span class="ai-tag">Live Claude answer</span><div class="ai-text">Thinking…</div></div>';
-    stream.appendChild(el); scrollDown();
+    target.appendChild(el);
+    if(target === chatPanelStream) scrollPanelDown(); else scrollDown();
     return el.querySelector('.ai-text');
   }
 
-  // ---- correction handling: lets a borrower or agent correct a simulated number by just
-  // typing it into the ask bar (e.g. "there's no HOA" / "taxes are actually lower, about 300").
-  // A quick structured-extraction call decides whether the message states a usable correction;
-  // if so it's actually applied to state.data (not just acknowledged in words) before the normal
-  // conversational reply is generated, and the decision is recomputed if one had already run.
-  var CORRECTION_FIELDS = {
-    tax: {label:'Monthly property tax', kind:'currency'},
-    ins: {label:'Monthly insurance', kind:'currency'},
-    hoa: {label:'Monthly HOA', kind:'currency'},
-    rent: {label:'Rent / qualifying income', kind:'currency'},
-    propertyValue: {label:'Purchase price / value', kind:'currency'},
-    loanAmount: {label:'Loan amount', kind:'currency'},
-    downPct: {label:'Down payment', kind:'percent'},
-    credit: {label:'Credit tier', kind:'enum', options:['740+','700-739','660-699','620-659','<620']}
-  };
-
-  function detectCorrections(q){
+  // pendingFieldKey (optional): the field the guided flow's own composer is currently waiting on
+  // (state.pendingField), passed by the callers below. It's the fix for a real reported bug: a
+  // borrower answering "How much are you planning to put down?" via "Something else" with a bare
+  // "150k" got it silently misread as a *reserves* figure instead of a down payment — the
+  // extraction had no idea a specific question was already on screen, so a bare number with no
+  // other anchor could land on whichever field's shape it happened to loosely match. Telling the
+  // model what's actually being asked lets it resolve that kind of ambiguity the same way a human
+  // reading the same screen would, while still letting an explicit, differently-named answer win.
+  function detectCorrections(q, pendingFieldKey){
     if(!q) return Promise.resolve([]);
     var fieldList = Object.keys(CORRECTION_FIELDS).map(function(k){
       var meta = CORRECTION_FIELDS[k];
@@ -2396,45 +3111,256 @@
         : (meta.kind === 'percent' ? 'a decimal 0-1, e.g. 20% -> 0.2' : 'a plain number, no $ or commas');
       return k+' ('+meta.label+', '+hint+')';
     }).join('; ');
+    var pendingHint = '';
+    var pendingMeta = pendingFieldKey && CORRECTION_FIELDS[pendingFieldKey];
+    if(pendingMeta){
+      pendingHint = "\n\nImportant context: this message is the borrower's direct answer to a question currently on their screen, specifically asking for '"+pendingMeta.label+"' (field key "+pendingFieldKey+"). If the message is a plausible, unqualified answer to that question — especially a bare number, percentage, or short phrase that doesn't explicitly name anything else — treat it as answering '"+pendingFieldKey+"', even if the value could also loosely fit another field's shape. Only attribute it to a different field if the message explicitly names that other thing by its real-world meaning (e.g. says \"reserves\", \"savings\", \"credit score\", \"purchase price\") or is clearly not an answer to the question on screen at all (e.g. it's a question back to you).";
+    }
     var prompt = "You are a strict JSON extraction function for a mortgage pre-approval prototype. "+
-      "Given the current file and the latest message from a borrower or agent, decide whether the message states a correction to any of these simulated fields: "+fieldList+". "+
-      "Current file:\n"+fileSnapshot()+"\n\nMessage: "+JSON.stringify(q)+"\n\n"+
+      "Given the current file and the latest message from a borrower or agent, decide whether the message states a correction OR a change of mind about any of these fields (some are simulated numbers, some are structural choices like approval type or loan program — both count): "+fieldList+". "+
+      "Current file:\n"+fileSnapshot()+"\n\nMessage: "+JSON.stringify(q)+pendingHint+"\n\n"+
       "Respond with ONLY minified JSON, no prose, no markdown fences, in exactly this shape: {\"corrections\":[{\"field\":\"tax\",\"value\":340}]}. "+
-      "Rules: only include a field when the message gives, or clearly implies (e.g. \"no HOA\" or \"there's no HOA\" means hoa 0), a specific usable number or tier for it — never invent a number from a vague word like \"lower\" or \"cheaper\" alone with nothing to anchor it. If the message isn't stating any correction, return {\"corrections\":[]}.";
+      "Rules: only include a field when the message gives, or clearly implies, a specific usable value for it — e.g. \"no HOA\" means hoa 0; \"let's do the full underwrite instead\" or \"I want to remove the financing contingency\" means tier full; \"switch back to pre-approval\" means tier preapproval; \"let's use bank statements instead\" means program bankstatement; \"actually go with the rental income\" means program dscr — never invent a number or choice from a vague word like \"lower\" or \"cheaper\" alone with nothing to anchor it, and never output a value that isn't one of the field's listed options for an enum field. For the down payment specifically: a percentage (\"20% down\") is downPct as a decimal 0-1; a flat dollar figure (\"$150,000 down\", \"150k down\", or a bare dollar-sized number while being asked how much they're putting down) is downAmount as a plain number — never convert one into the other yourself. If the message isn't stating any correction or change of mind, return {\"corrections\":[]}.";
     return aiJson(prompt, {modelTier:'quick', cache:false}).then(function(res){
       return (res && Array.isArray(res.corrections)) ? res.corrections : [];
     }).catch(function(){ return []; });
   }
 
+  // Runs one reopen function after another, in a fixed order (income-related steps always before
+  // credit/reserves-related ones, matching their order in the normal guided flow), then calls done().
+  // Each fn has signature function(next){ ...eventually calls next()... } — same shape as the
+  // guided-flow step functions themselves, so askIncome/creditStep/reservesStep plug in directly.
+  function chainFns(fns, done){
+    var i = 0;
+    function step(){
+      if(i >= fns.length){ done(); return; }
+      var fn = fns[i++];
+      fn(step);
+    }
+    step();
+  }
+
+  // After a structural ask-bar change (or a reopened step it triggered) is fully resolved: pick
+  // up exactly where the normal guided flow would — run the decision if everything required is
+  // now present, otherwise recap what's still missing (same honest, no-guessing behavior the
+  // saved-chat "resume" feature already uses).
+  function continueAfterStructuralChange(){
+    if(checklistComplete()){ runDecision(); } else { resumeFlow(); }
+  }
+
   function applyCorrections(corrections){
     var applied = [];
+    var structural = [];
+    var appliedFields = []; // {field, prevValue} for every field actually written this pass —
+                             // prevValue lets us tell "answering a question that was blank" (the
+                             // guided flow should now advance) apart from "correcting something
+                             // already answered" (nothing to advance, just recompute).
     (corrections || []).forEach(function(c){
       if(!c || !c.field) return;
       var meta = CORRECTION_FIELDS[c.field];
       if(!meta) return;
       if(meta.kind === 'enum'){
         if(meta.options.indexOf(c.value) === -1) return;
+        var prevValue = state.data[c.field];
+        if(prevValue === c.value) return; // already this value — nothing changed
         state.data[c.field] = c.value;
-        applied.push(meta.label+' → '+c.value);
+        var shown = (meta.valueLabels && meta.valueLabels[c.value]) || c.value;
+        applied.push(meta.label+' → '+shown);
+        appliedFields.push({field:c.field, prevValue:prevValue});
+        if(c.field === 'credit'){ state.data.creditSource = 'self-reported'; }
+        if(meta.reopen) structural.push({field:c.field, reopen:meta.reopen, prevValue:prevValue, newValue:c.value});
       } else {
         var n = typeof c.value === 'number' ? c.value : parseFloat(String(c.value).replace(/[^0-9.]/g,''));
         if(isNaN(n) || n < 0) return;
         if(meta.kind === 'percent' && n > 1) n = n/100;
+        var prevValueNum = state.data[c.field];
+        if(meta.kind === 'number') n = Math.round(n);
         state.data[c.field] = n;
-        applied.push(meta.label+' → '+(meta.kind==='currency' ? fmt$(n) : Math.round(n*100)+'%'));
+        var shownNum = meta.kind==='currency' ? fmt$(n) : (meta.kind==='number' ? String(n) : Math.round(n*100)+'%');
+        applied.push(meta.label+' → '+shownNum);
+        appliedFields.push({field:c.field, prevValue:prevValueNum});
       }
     });
-    if(!applied.length) return applied;
-    var touched = corrections.map(function(c){ return c && c.field; });
+    if(!applied.length) return {applied: applied, reopenQueue: [], pendingAdvance: null};
+    var touched = appliedFields.map(function(a){ return a.field; });
+    if(touched.indexOf('reservesAmount')>=0 && touched.indexOf('reserves')<0){
+      // A dollar figure (rather than a direct "6+ months"-style range statement) needs converting
+      // into the same month-range the guided flow's own reserves question collects — using this
+      // property's estimated PITIA, the same conversion the real bank-connect path already does.
+      // Skipped whenever an explicit range statement ("6+ months") was ALSO recognized in the
+      // same message — that direct statement is a more literal signal and should win rather than
+      // being silently overwritten by a derived figure from the same text.
+      var pitiaForReserves = estimatePITIA();
+      if(pitiaForReserves > 0){
+        var prevReserves = state.data.reserves;
+        var reserveMonthsFromAmount = state.data.reservesAmount / pitiaForReserves;
+        state.data.reserves = reserveMonthsFromAmount < 3 ? '<3' : reserveMonthsFromAmount < 6 ? '3-6' : '6+';
+        if(state.data.reservesSource !== 'verified'){ state.data.reservesSource = 'self-reported'; }
+        if(appliedFields.filter(function(a){ return a.field==='reserves'; }).length === 0){
+          // Lets the pendingAdvance check below recognize this as having answered the reserves
+          // question (same as a direct "6+ months"-style range statement would) when it was
+          // genuinely blank before — carries the real previous value, not a guessed one.
+          appliedFields.push({field:'reserves', prevValue: prevReserves});
+          touched.push('reserves');
+        }
+      }
+    }
+    if(touched.indexOf('downAmount')>=0 && touched.indexOf('downPct')<0 && touched.indexOf('loanAmount')<0 && state.data.propertyValue){
+      // A flat dollar figure for the down payment needs converting into the same downPct the
+      // guided flow's own down-payment question collects, so everything downstream (loanAmount,
+      // the "down payment answered" checklist flag, pendingAdvance) treats it exactly like a
+      // percentage answer would. Skipped whenever a direct percentage or a direct loan amount was
+      // ALSO recognized in the same message — either of those is a more literal, unambiguous
+      // signal and should win rather than being overwritten by a derived figure.
+      var prevDownPct = state.data.downPct;
+      state.data.downPct = state.data.downAmount / state.data.propertyValue;
+      if(appliedFields.filter(function(a){ return a.field==='downPct'; }).length === 0){
+        appliedFields.push({field:'downPct', prevValue: prevDownPct});
+        touched.push('downPct');
+      }
+    }
     if(touched.indexOf('downPct')>=0 && touched.indexOf('loanAmount')<0 && state.data.propertyValue){
       state.data.loanAmount = Math.round(state.data.propertyValue * (1 - state.data.downPct));
     } else if(touched.indexOf('loanAmount')>=0 && touched.indexOf('downPct')<0 && state.data.propertyValue){
       state.data.downPct = 1 - (state.data.loanAmount / state.data.propertyValue);
     }
+    if((touched.indexOf('downPct')>=0 || touched.indexOf('loanAmount')>=0) && state.data.propertyValue && state.data.loanAmount){
+      state.data.loan = true; // the guided flow's own "down payment answered" flag — corrections
+                               // never set this otherwise, which left the checklist item stuck
+                               // unchecked even once downPct/loanAmount both had real numbers.
+    }
+    if(touched.indexOf('purpose')>=0 && state.data.purpose){
+      state.data.purposeKey = state.data.purpose === 'purchase' ? 'purchase' : (state.data.purpose === 'ratetermrefi' ? 'rt' : 'co');
+    }
+    // ---- structural side effects: a tier upgrade or program switch can require genuinely new
+    // input (a real credit/reserves verification, or income documentation), not just a field
+    // flip — see this function's header comment block above CORRECTION_FIELDS. Build an ordered
+    // reopenQueue of the guided steps still needed; askQuestion() runs it right after the AI's
+    // reply so the borrower actually gets walked through whatever the change now requires,
+    // instead of the change being acknowledged in words but never really taking effect.
+    var reopenQueue = [];
+    var reopenIncome = false, reopenCreditReserves = false;
+    structural.forEach(function(s){
+      if(s.field === 'program'){
+        // Income documentation requirements differ per program — any stale prior income data no
+        // longer applies once the program actually changes, whichever direction.
+        state.data.grossMonthlyFigure = null; state.data.qualifyingIncome = null; state.data.incomeSource = null;
+        state.data.statementType = null; state.data.statementMonths = null; state.data.income = null;
+        if(s.newValue === 'dscr'){
+          // DSCR doesn't need income docs at all — restore the property's market rent if we have
+          // it (from an earlier lookup); the checklist itself already hides the income item for
+          // DSCR, so no reopen needed, this is a clean silent switch.
+          state.data.rent = state.data.marketRent || null;
+        } else {
+          // Moving into (or between) Bank Statement / P&L — always need fresh income docs.
+          state.data.rent = null;
+          reopenIncome = true;
+        }
+      } else if(s.field === 'tier'){
+        if(s.newValue === 'full' && s.prevValue !== 'full'){
+          // "Fully Underwritten" specifically means verified credit and reserves — a self-reported
+          // answer from when the path was Pre-Approval doesn't satisfy that, so clear it and
+          // actually re-collect it through the real verification steps.
+          state.data.credit = null; state.data.creditSource = null;
+          state.data.reserves = null; state.data.reservesSource = null;
+          reopenCreditReserves = true;
+        }
+        // Downgrading full -> preapproval: whatever was already verified is more rigorous than
+        // self-report needs to be, so nothing to re-collect — a clean silent switch.
+      }
+    });
+    if(reopenIncome) reopenQueue.push(function(next){ askIncome(next); });
+    if(reopenCreditReserves) reopenQueue.push(function(next){ creditStep(function(){ reservesStep(next); }); });
+
+    // ---- "answering the question that's already on screen": the guided flow's composer may
+    // currently be waiting on exactly one of the fields the borrower just answered (see
+    // state.pendingField / state.pendingAdvance, set by each ask* step right before it shows its
+    // chips). If so — and this genuinely filled in a blank, not just corrected something already
+    // answered — pick up the SAME continuation that composer would have used, so the guided flow
+    // moves on to its next real question instead of leaving that now-stale composer on screen.
+    // Skipped whenever a reopen is already queued above; that has its own, more specific
+    // continuation (continueAfterStructuralChange(), run via chainFns in askQuestion()).
+    var pendingAdvance = null;
+    if(!reopenQueue.length && state.pendingField && state.pendingAdvance){
+      var match = appliedFields.filter(function(a){ return a.field === state.pendingField; })[0];
+      if(match && !match.prevValue && state.data[state.pendingField]){
+        pendingAdvance = state.pendingAdvance;
+        state.pendingField = null; state.pendingAdvance = null;
+      }
+    }
+
     renderChecklist();
-    if(state.result){ state.result = computeDecision(); }
+    var priorResult = state.result; // captured before any reassignment below, for decisionShift
+    var decisionShift = null;
+    if(reopenQueue.length){
+      // A decision computed under the old choice is no longer valid — don't show it again until
+      // the reopened steps finish and continueAfterStructuralChange() decides what's next.
+      state.result = null;
+    } else if(state.result){
+      state.result = computeDecision();
+      decisionShift = describeDecisionShift(priorResult, state.result);
+    }
     updateSummary();
-    return applied;
+    return {applied: applied, reopenQueue: reopenQueue, pendingAdvance: pendingAdvance, decisionShift: decisionShift};
+  }
+
+  // ---- "Something else" (v15): the free-text escape hatch setComposerChips adds to every
+  // guided-flow question (see above). Runs the typed answer through the exact same
+  // detectCorrections/applyCorrections pipeline the floating "Ask Kevo" chat uses, inline in the
+  // main flow — there's no separate panel to close and no "bring it back" moment needed here,
+  // since the borrower never actually left the guided flow to begin with. If the answer is
+  // recognized, the flow continues on its own exactly like tapping the matching chip would; if
+  // it isn't (a genuine question, or something this tool can't yet parse), it gets a real live-AI
+  // reply and the original chips come back so they can still answer normally.
+  function handleOtherAnswer(rawText, restoreChips){
+    addUserBubble(rawText);
+    composer.innerHTML = '';
+    var noteEl = document.createElement('div');
+    noteEl.className = 'hint';
+    noteEl.style.margin = '-6px 0 0 36px';
+    stream.appendChild(noteEl); scrollDown();
+    // Captured before detectCorrections/applyCorrections run — applyCorrections clears
+    // state.pendingField the moment it actually matches and advances, so this snapshot is what
+    // tells the extraction which question was on screen when the borrower typed this.
+    var pendingFieldAtAsk = state.pendingField;
+
+    detectCorrections(rawText, pendingFieldAtAsk).then(function(corrections){
+      var result = applyCorrections(corrections);
+      if(result.applied.length){ noteEl.textContent = '✓ Got it: ' + result.applied.join(' · '); scrollDown(); }
+      else { noteEl.remove(); }
+
+      if(result.pendingAdvance){ setTimeout(result.pendingAdvance, result.applied.length ? 500 : 0); return; }
+      if(result.reopenQueue && result.reopenQueue.length){
+        setTimeout(function(){ chainFns(result.reopenQueue, continueAfterStructuralChange); }, result.applied.length ? 500 : 0);
+        return;
+      }
+
+      // Not a usable answer to the question on screen (it may have been a real question, or
+      // something this pass just can't parse yet) — give a real live-AI reply if available, then
+      // restore the original chips so they can still tap one, or try describing it again.
+      if(aiMode){
+        var target = addAiBubble(stream);
+        var turns = [{role:'user', content: ASK_SYSTEM + '\n\nBorrower’s file so far:\n' + fileSnapshot()}]
+          .concat(askTurns)
+          .concat([{role:'user', content: rawText + '\n\n[This was typed into the guided flow\'s own "Something else" box, in answer to the question already on screen, and didn\'t contain a usable value for it. Help them briefly, in the same warm, plain-language way you always do, then let them know they can describe it again in their own words or just tap one of the options below.]'}]);
+        aiChat(turns, {
+          modelTier: 'quick', cache: false,
+          onText: function(u){ target.textContent = u.text; scrollDown(); }
+        }).then(function(res){
+          askTurns.push({role:'user', content:rawText}, {role:'assistant', content:res.text});
+          if(askTurns.length > 8) askTurns = askTurns.slice(-8);
+        }).catch(function(){
+          target.textContent = "I couldn't quite match that to one of the options below — feel free to try rephrasing, or just tap the one that's closest.";
+        }).finally(function(){
+          restoreChips();
+        });
+      } else {
+        addBotBubble("I couldn't quite match that to one of the options below — try rephrasing, or just tap the one that's closest.", restoreChips);
+      }
+    }).catch(function(){
+      noteEl.remove();
+      addBotBubble("Something went wrong reading that — you can try again, or just pick one of the options below.", restoreChips);
+    });
   }
 
   function askQuestion(q){
@@ -2445,26 +3371,50 @@
     var noteEl = document.createElement('div');
     noteEl.className = 'hint';
     noteEl.style.margin = '-6px 0 0 36px';
-    stream.appendChild(noteEl);
+    chatPanelStream.appendChild(noteEl);
     var target = null;
-    detectCorrections(q).then(function(corrections){
-      var applied = applyCorrections(corrections);
-      if(applied.length){ noteEl.textContent = '✓ Updated in your file: ' + applied.join(' · '); scrollDown(); }
+    var pendingReopen = [];
+    var pendingAdvanceFn = null;
+    var pendingDecisionShift = null;
+    var pendingAppliedCount = 0;
+    var pendingFieldAtAsk = state.pendingField;
+    detectCorrections(q, pendingFieldAtAsk).then(function(corrections){
+      var result = applyCorrections(corrections);
+      var applied = result.applied;
+      pendingReopen = result.reopenQueue;
+      pendingAdvanceFn = result.pendingAdvance;
+      pendingDecisionShift = result.decisionShift;
+      pendingAppliedCount = applied.length;
+      if(applied.length){
+        noteEl.textContent = '✓ Updated in your file: ' + applied.join(' · ');
+        if(pendingDecisionShift && pendingDecisionShift.changed){
+          noteEl.textContent += (pendingDecisionShift.worse ? ' — heads up, this changes your outcome.' : ' — this now clears guidelines.');
+        }
+        scrollPanelDown();
+      }
       target = addAiBubble();
+      // When pendingAdvanceFn is set, this message just answered the exact question the guided
+      // flow's own composer was waiting on — that flow is about to continue on its own right
+      // after this reply (see the .finally() below), so tell the model to keep its reply to a
+      // brief acknowledgment instead of re-asking the next few questions itself in prose.
+      var lastContent = q;
+      if(pendingAdvanceFn){
+        lastContent = q + '\n\n[This message directly answered the question the guided flow was already asking on screen. That flow will automatically continue with its next real question immediately after your reply. Reply with only a brief, one-sentence acknowledgment of what they answered — do not ask the borrower any further questions yourself, the flow has that covered.]';
+      }
       var turns = [{role:'user', content: ASK_SYSTEM + '\n\nBorrower’s file so far:\n' + fileSnapshot()}]
         .concat(askTurns)
-        .concat([{role:'user', content:q}]);
+        .concat([{role:'user', content:lastContent}]);
       return aiChat(turns, {
         modelTier: 'quick',
         cache: false,
-        onText: function(u){ target.textContent = u.text; scrollDown(); }
+        onText: function(u){ target.textContent = u.text; scrollPanelDown(); }
       });
     }).then(function(res){
       askTurns.push({role:'user', content:q}, {role:'assistant', content:res.text});
       if(askTurns.length > 8) askTurns = askTurns.slice(-8);
     }).catch(function(e){
       var copy = {
-        not_granted: "You'd need to allow Claude access for this demo to answer live — you can still continue the approval flow above.",
+        not_granted: "You'd need to allow Claude access for this demo to answer live — your approval keeps going either way, this chat is separate from it.",
         rate_limited: "Getting a lot of questions right now — try again in a moment.",
         sampling_disabled: "Live AI answers aren't available for this account.",
         backend_error: "The live AI backend hit an error just now — try again in a moment.",
@@ -2475,27 +3425,107 @@
     }).finally(function(){
       askBusy = false;
       document.getElementById('askSend').disabled = false;
+      if(pendingReopen.length || pendingAdvanceFn){
+        // The chat answered something the guided flow actually needed (a correction, a change of
+        // mind, or the exact question its composer was waiting on). That flow lives on its own
+        // panel behind this one — so instead of leaving the borrower to notice the change
+        // themselves, briefly say so here, close this panel to bring the approval flow back into
+        // view, and flash a toast over it so the "why did the screen just change" moment is
+        // never a mystery. See applyCorrections()'s reopenQueue/pendingAdvance for what's about
+        // to run underneath.
+        appendPanelNotice('Got it — continuing your approval…');
+        setTimeout(function(){
+          closeChatPanel();
+          flashFlowToast('Continuing your approval…');
+          if(pendingReopen.length){ chainFns(pendingReopen, continueAfterStructuralChange); }
+          else { pendingAdvanceFn(); }
+        }, 900);
+      } else if(pendingAppliedCount && (state.data.letterGenerated || state.result)){
+        // v17: a correction typed into this chat landed on a file that already has a decision (or
+        // letter) sitting on the main panel behind it. That panel doesn't repaint itself just
+        // because state.result changed underneath it, so — same as "continuing your approval"
+        // above — surface it here and bring that panel back into view already refreshed, instead
+        // of leaving a stale badge/letter for the borrower to notice on their own.
+        appendPanelNotice('Got it — updating your file…');
+        setTimeout(function(){
+          closeChatPanel();
+          flashFlowToast('Updating your approval…');
+          reflectAppliedCorrection({decisionShift: pendingDecisionShift});
+        }, 900);
+      }
     });
   }
 
   function addUserBubbleTagged(text){
+    hidePanelEmptyState();
     var el = document.createElement('div');
     el.className = 'msg user';
     el.innerHTML = '<div class="av">Y</div><div class="bubble"></div>';
     el.querySelector('.bubble').textContent = text;
-    stream.appendChild(el); scrollDown();
+    chatPanelStream.appendChild(el); scrollPanelDown();
   }
 
-  function showAskBar(){
-    var bar = document.getElementById('askbar');
-    var toggle = document.getElementById('askToggle');
+  function hidePanelEmptyState(){
+    var empty = document.getElementById('chatPanelEmpty');
+    if(empty) empty.style.display = 'none';
+  }
+
+  // ---- floating "Ask Kevo" chat widget (v14): a separate surface from the approval flow, so a
+  // side conversation never displaces or visually tangles with the guided steps underneath. The
+  // launcher only appears once live AI is confirmed available (see initAI() below). Opening it
+  // never touches the approval panel; closing it (by the X, or automatically once an answer
+  // changes something — see askQuestion()'s .finally()) leaves that panel exactly as it was, one
+  // step further along if the borrower answered something the guided flow needed.
+  function openChatPanel(){
+    document.getElementById('chatPanel').classList.add('open');
+    document.getElementById('chatLauncher').classList.add('open');
+    hideChatHint();
+    setTimeout(function(){ document.getElementById('askInput').focus(); }, 180);
+  }
+  function closeChatPanel(){
+    document.getElementById('chatPanel').classList.remove('open');
+    document.getElementById('chatLauncher').classList.remove('open');
+  }
+  function toggleChatPanel(){
+    var open = document.getElementById('chatPanel').classList.contains('open');
+    if(open){ closeChatPanel(); } else { openChatPanel(); }
+  }
+  function hideChatHint(){
+    var hint = document.getElementById('chatHint');
+    if(hint){ hint.classList.add('hidden'); }
+  }
+  function appendPanelNotice(text){
+    hidePanelEmptyState();
+    var el = document.createElement('div');
+    el.className = 'chat-panel-notice';
+    el.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg><span></span>';
+    el.querySelector('span').textContent = text;
+    chatPanelStream.appendChild(el); scrollPanelDown();
+  }
+  function flashFlowToast(text){
+    var toast = document.getElementById('flowToast');
+    document.getElementById('flowToastText').textContent = text || 'Continuing your approval…';
+    toast.classList.add('show');
+    setTimeout(function(){ toast.classList.remove('show'); }, 2600);
+  }
+
+  function enableChatWidget(){
+    var launcher = document.getElementById('chatLauncher');
     var input = document.getElementById('askInput');
     var send = document.getElementById('askSend');
-    bar.style.display = 'flex';
-    toggle.onclick = function(){ bar.classList.toggle('collapsed'); if(!bar.classList.contains('collapsed')) input.focus(); };
+    launcher.classList.add('ready');
+    launcher.onclick = toggleChatPanel;
+    document.getElementById('chatPanelCloseBtn').onclick = closeChatPanel;
     function submit(){ var v = input.value.trim(); if(!v) return; input.value=''; askQuestion(v); }
     send.onclick = submit;
     input.addEventListener('keydown', function(e){ if(e.key==='Enter') submit(); });
+    // A brief, dismissable nudge toward the launcher so moving the "ask anything" affordance out
+    // of the main flow doesn't cost discoverability. Goes away the first time the panel opens, or
+    // on its own after a few seconds, or if tapped directly.
+    var hint = document.getElementById('chatHint');
+    setTimeout(function(){ hint.classList.remove('hidden'); }, 900);
+    setTimeout(hideChatHint, 9000);
+    hint.onclick = function(){ hideChatHint(); openChatPanel(); };
   }
 
   (function initAI(){
@@ -2522,7 +3552,7 @@
     tryCapability().then(function(ok){
       return ok ? true : tryBackend();
     }).then(function(ok){
-      if(ok) showAskBar();
+      if(ok) enableChatWidget();
     });
   })();
 
