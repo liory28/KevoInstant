@@ -275,6 +275,21 @@
   .snap-card .card-row .srv{display:flex;align-items:center;gap:2px;}
   .snap-card .edit-pencil{background:none;border:none;padding:3px;margin:-3px -3px -3px 2px;color:var(--ink-faint);cursor:pointer;display:inline-flex;align-items:center;border-radius:6px;opacity:.6;flex-shrink:0;}
   .snap-card .edit-pencil:hover{opacity:1;color:var(--clay-deep);background:var(--clay-tint);}
+
+  /* v18: agent referral-fee notice — a chat-card version (agentBuildScenario's own moment of
+     "you're eligible for this") and a persistent sidebar version (snap-card), sharing one look:
+     a sage-tinted highlight so it reads as good news, not another line-item fact. */
+  .agent-fee-card{background:var(--sage-tint);border:1px solid rgba(61,92,77,0.28);border-radius:12px;padding:12px 14px;}
+  .agent-fee-card .afc-tag{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--sage-deep);display:block;margin-bottom:7px;}
+  .agent-fee-card .afc-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .agent-fee-card .afc-row span{font-size:13px;color:var(--ink-soft);}
+  .agent-fee-card .afc-amt{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:19px;color:var(--sage-deep);white-space:nowrap;}
+  .agent-fee-card .afc-note{font-size:11.5px;color:var(--ink-faint);margin-top:6px;line-height:1.5;}
+  .snap-card .snap-fee{background:var(--sage-tint);border:1px solid rgba(61,92,77,0.28);border-radius:10px;padding:9px 10px;margin-top:10px;}
+  .snap-card .snap-fee .sf-tag{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--sage-deep);display:block;margin-bottom:4px;}
+  .snap-card .snap-fee .sf-row{display:flex;justify-content:space-between;align-items:baseline;}
+  .snap-card .snap-fee .sf-amt{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:15px;color:var(--sage-deep);}
+  .snap-card .snap-fee .sf-note{font-size:10.5px;color:var(--ink-faint);margin-top:4px;line-height:1.45;}
   .snap-edit-box{margin-top:10px;padding-top:10px;border-top:1px dashed var(--stone-line);display:flex;flex-direction:column;gap:6px;}
   .snap-edit-box label{font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-faint);}
   .snap-edit-box .ser-row{display:flex;gap:6px;}
@@ -809,6 +824,22 @@
     return loanAmount * r / (1 - Math.pow(1+r,-360));
   }
 
+  // v18: Lior's ask — an agent sketching a scenario in Agent mode should be told, plainly, that
+  // this is a business-purpose loan (true of everything this tool covers — Investment occupancy
+  // only, see the guideline-engine scope note below) and what that's worth to them: a 50bps
+  // referral fee, paid directly to the agent, with the honest caveat that what they actually net
+  // depends on their own brokerage's commission-split policy (a real-estate-license-law question,
+  // not a Kevo one) — not a claim Kevo controls or discloses that split. Deliberately a flat rate
+  // with no tiering here (kept simple and defensible, consistent with how DSCR Authority is the
+  // one competitor in `kevo-competitive-landscape.md` that avoids tiering specifically to reduce
+  // RESPA-adjacent risk) — see the project doc's "Version 18" section for how this reconciles
+  // with the separate 35/15bps agent/broker-override model already pitched on the broker-shop
+  // landing page elsewhere in this project.
+  var AGENT_FEE_BPS = 50;
+  function agentFeeAmount(loanAmount){
+    return Math.round((loanAmount||0) * AGENT_FEE_BPS / 10000);
+  }
+
   // ============================================================================================
   // REAL AMERITRUST "DIAMOND" GUIDELINE ENGINE — Investment-occupancy only (Kevo's scope).
   // Transcribed from Ameritrust Mortgage Corp. Diamond program matrices/guidelines, Ver. A, 03.16.26:
@@ -1294,7 +1325,14 @@
       return '<div class="card-row"><span>'+snapshotFieldLabel(key)+'</span><span class="srv"><b class="mono">'+safeHtml(shown)+'</b>'+
         '<button class="edit-pencil" type="button" data-field="'+key+'" aria-label="Edit '+snapshotFieldLabel(key)+'" title="Edit">'+EDIT_PENCIL_SVG+'</button></span></div>';
     }).join('');
+    // v18: keep the agent referral-fee eligibility visible for the rest of the session, not just
+    // the one-time card agentBuildScenario() shows — re-derived live from the current loan amount
+    // so it stays correct through "Change the numbers." Agent mode only: this is the agent's own
+    // compensation, never shown on the buyer-facing side of the sidebar.
+    var feeHtml = (state.mode === 'agent' && d.loanAmount) ?
+      '<div class="snap-fee"><span class="sf-tag">Your referral fee</span><div class="sf-row"><span>'+AGENT_FEE_BPS+' bps, business-purpose</span><b class="sf-amt mono">'+fmt$(agentFeeAmount(d.loanAmount))+'</b></div><div class="sf-note">Paid at funding — subject to your brokerage’s commission split.</div></div>' : '';
     body.innerHTML = addrHtml +
+      feeHtml +
       (rowsHtml ? '<div style="margin-top:10px;">'+rowsHtml+'</div>' : '') +
       (rowsHtml ? '<div class="snap-note">Tap a pencil to go back and correct that answer — anytime, even mid-flow.</div>' : '') +
       '<div id="snapEditBox"></div>';
@@ -1521,17 +1559,30 @@
         '<div class="card-row"><span>Rent / payment</span><b class="mono">'+ratio.toFixed(2)+'×</b></div>'+
         (p.decliningMarket ? '<div class="card-row"><span>Market trend</span><b class="mono">Declining (per comps)</b></div>' : ''),
         function(){
-          addBotBubble("This assumes a 700–739 credit tier and 25% down since I don't have your buyer's actual numbers yet — their real terms could land in a different tier once they're in their own conversation. Want to send them the link?", function(){
-            setComposerChips([
-              {label:'Invite this buyer', value:'invite'},
-              {label:'Preview the buyer view', value:'preview'},
-              {label:'Change the numbers', value:'change'}
-            ], function(v){
-              if(v==='invite'){ agentAskName(); }
-              else if(v==='preview'){ previewBuyerFromAgent(); }
-              else { agentAskAddress(); }
-            });
-          });
+          // v18: every program this tool covers is Investment-occupancy / business-purpose only
+          // (see the guideline engine's scope note) — so any scenario an agent sketches here
+          // already clears that bar. Tell them plainly, with the dollar figure, right where they
+          // first see the numbers — see agentFeeAmount() above for the honest caveat this carries.
+          addBotCard(
+            '<div class="agent-fee-card">'+
+              '<span class="afc-tag">Business-purpose loan · you’re eligible</span>'+
+              '<div class="afc-row"><span>Your referral fee <span class="mono" style="font-size:11.5px;">('+AGENT_FEE_BPS+' bps)</span></span><b class="afc-amt mono">'+fmt$(agentFeeAmount(loanAmount))+'</b></div>'+
+              '<div class="afc-note">Paid directly to you at funding — subject to your brokerage’s commission split.</div>'+
+            '</div>',
+            function(){
+              addBotBubble("This assumes a 700–739 credit tier and 25% down since I don't have your buyer's actual numbers yet — their real terms could land in a different tier once they're in their own conversation. Want to send them the link?", function(){
+                setComposerChips([
+                  {label:'Invite this buyer', value:'invite'},
+                  {label:'Preview the buyer view', value:'preview'},
+                  {label:'Change the numbers', value:'change'}
+                ], function(v){
+                  if(v==='invite'){ agentAskName(); }
+                  else if(v==='preview'){ previewBuyerFromAgent(); }
+                  else { agentAskAddress(); }
+                });
+              });
+            }
+          );
         }
       );
     });
