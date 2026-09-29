@@ -679,6 +679,13 @@
     });
   }
   function resumeFlow(){
+    // v19: Agent mode gets its own resume path — it never collects credit/reserves/entity/etc.
+    // (only program, purpose, property, loan amount), so the buyer-checklist-based branches below
+    // were actively wrong for it: an agent scenario is either fully sketched or it isn't, there's
+    // no partial buyer checklist to report, and — the actual bug — there was no way back to the
+    // share/invite link once an agent returned to an already-sketched deal. See
+    // showAgentScenarioShareOptions() above.
+    if(state.mode === 'agent'){ resumeAgentFlow(); return; }
     if(state.result){ offerPostDecisionActions(); return; }
     if(checklistComplete()){ runDecision(); return; }
     var items = CHECK_ITEMS.filter(function(it){
@@ -692,6 +699,18 @@
           if(state.mode === 'agent'){ agentStart(); } else { start(); }
         }
       });
+    });
+  }
+  function resumeAgentFlow(){
+    var d = state.data;
+    if(d.property && d.loan && d.loanAmount){
+      showAgentScenarioShareOptions(true);
+      return;
+    }
+    // Sketch was never finished (e.g. they left before entering an address) — nothing to share
+    // yet, so just pick the guided flow back up from the start.
+    addBotBubble("Let's finish sketching this one.", function(){
+      setComposerChips([{label:'Continue', value:'continue'}], function(){ agentStart(); });
     });
   }
 
@@ -1532,18 +1551,73 @@
     });
   }
 
+  // v19: the scenario+fee cards and the share/preview/change-numbers menu that follows them,
+  // factored out of agentBuildScenario() so the exact same view can also be shown when an agent
+  // comes BACK to an already-sketched deal (resumeAgentFlow, below) — not just right after
+  // building it the first time. Reads everything from state.data (already saved by
+  // agentBuildScenario) rather than recomputing from the address, so it renders identically
+  // whether it's being shown for the first time or the fifth.
+  function agentScenarioCardsHtml(){
+    var d = state.data;
+    var loanAmount = d.loanAmount;
+    var pi = monthlyPI(loanAmount, rateForCredit('700-739'));
+    var pitia = pi + (d.tax||0) + (d.ins||0) + (d.hoa||0);
+    var ratio = pitia > 0 ? (d.rent||0)/pitia : 0;
+    return {
+      scenario:
+        '<div class="ck">Scenario estimate — illustrative</div>'+
+        '<div class="card-row"><span>Assumed loan amount</span><b class="mono">'+fmt$(loanAmount)+'</b></div>'+
+        '<div class="card-row"><span>Est. monthly payment</span><b class="mono">'+fmt$(pitia)+'</b></div>'+
+        '<div class="card-row"><span>Rent / payment</span><b class="mono">'+ratio.toFixed(2)+'×</b></div>'+
+        (d.decliningMarket ? '<div class="card-row"><span>Market trend</span><b class="mono">Declining (per comps)</b></div>' : ''),
+      // v18: every program this tool covers is Investment-occupancy / business-purpose only (see
+      // the guideline engine's scope note) — so any scenario an agent sketches here already
+      // clears that bar. See agentFeeAmount() above for the honest caveat this carries.
+      fee:
+        '<div class="agent-fee-card">'+
+          '<span class="afc-tag">Business-purpose loan · you’re eligible</span>'+
+          '<div class="afc-row"><span>Your referral fee <span class="mono" style="font-size:11.5px;">('+AGENT_FEE_BPS+' bps)</span></span><b class="afc-amt mono">'+fmt$(agentFeeAmount(loanAmount))+'</b></div>'+
+          '<div class="afc-note">Paid directly to you at funding — subject to your brokerage’s commission split.</div>'+
+        '</div>'
+    };
+  }
+  // v19: Lior's bug report — coming back to a previously-sketched deal had NO way to re-share it
+  // with the buyer, and the fallback "still need…" resume message wrongly listed buyer-only
+  // fields (credit score, reserves, entity, etc.) agent mode never collects in the first place.
+  // The actual invite link was never really "gone" — buildInviteUrl() rebuilds it deterministically
+  // from state.data every time — it just had no door back to it once the original chat scrolled
+  // past. This is that door, used both right after a fresh sketch and on every resume.
+  function showAgentScenarioShareOptions(isResume){
+    var cards = agentScenarioCardsHtml();
+    addBotCard(cards.scenario, function(){
+      addBotCard(cards.fee, function(){
+        var msg = isResume
+          ? (state.data.inviteSent
+              ? "You've already sent this scenario to your buyer — want the link again, a preview of what they'll see, or to change the numbers?"
+              : "This scenario's ready to go — want to send it to your buyer, preview what they'll see, or change the numbers?")
+          : "This assumes a 700–739 credit tier and 25% down since I don't have your buyer's actual numbers yet — their real terms could land in a different tier once they're in their own conversation. Want to send them the link?";
+        addBotBubble(msg, function(){
+          setComposerChips([
+            {label: (isResume && state.data.inviteSent) ? 'Copy the invite link again' : 'Invite this buyer', value:'invite'},
+            {label:'Preview the buyer view', value:'preview'},
+            {label:'Change the numbers', value:'change'}
+          ], function(v){
+            if(v==='invite'){ agentAskName(); }
+            else if(v==='preview'){ previewBuyerFromAgent(); }
+            else { agentAskAddress(); }
+          });
+        });
+      });
+    });
+  }
+
   function agentBuildScenario(){
     addBotBubble('Sketching the numbers for '+state.data.address+'…', function(){
       var p = lookupProperty(state.data.address);
       var price = state.data.agentPrice || p.value;
       var rent = state.data.agentRent || p.rent;
-      var assumedTier = '700-739';
       var downPct = 0.25;
       var loanAmount = Math.round(price * (1 - downPct));
-      var rate = rateForCredit(assumedTier);
-      var pi = monthlyPI(loanAmount, rate);
-      var pitia = pi + p.tax + p.ins + p.hoa;
-      var ratio = pitia > 0 ? rent/pitia : 0;
       state.data.propertyValue = price;
       state.data.tax = p.tax; state.data.ins = p.ins; state.data.hoa = p.hoa;
       state.data.decliningMarket = p.decliningMarket;
@@ -1552,39 +1626,7 @@
       state.data.downPct = downPct;
       state.data.property = true; state.data.loan = true;
       renderChecklist(); updateSummary();
-      addBotCard(
-        '<div class="ck">Scenario estimate — illustrative</div>'+
-        '<div class="card-row"><span>Assumed loan amount</span><b class="mono">'+fmt$(loanAmount)+'</b></div>'+
-        '<div class="card-row"><span>Est. monthly payment</span><b class="mono">'+fmt$(pitia)+'</b></div>'+
-        '<div class="card-row"><span>Rent / payment</span><b class="mono">'+ratio.toFixed(2)+'×</b></div>'+
-        (p.decliningMarket ? '<div class="card-row"><span>Market trend</span><b class="mono">Declining (per comps)</b></div>' : ''),
-        function(){
-          // v18: every program this tool covers is Investment-occupancy / business-purpose only
-          // (see the guideline engine's scope note) — so any scenario an agent sketches here
-          // already clears that bar. Tell them plainly, with the dollar figure, right where they
-          // first see the numbers — see agentFeeAmount() above for the honest caveat this carries.
-          addBotCard(
-            '<div class="agent-fee-card">'+
-              '<span class="afc-tag">Business-purpose loan · you’re eligible</span>'+
-              '<div class="afc-row"><span>Your referral fee <span class="mono" style="font-size:11.5px;">('+AGENT_FEE_BPS+' bps)</span></span><b class="afc-amt mono">'+fmt$(agentFeeAmount(loanAmount))+'</b></div>'+
-              '<div class="afc-note">Paid directly to you at funding — subject to your brokerage’s commission split.</div>'+
-            '</div>',
-            function(){
-              addBotBubble("This assumes a 700–739 credit tier and 25% down since I don't have your buyer's actual numbers yet — their real terms could land in a different tier once they're in their own conversation. Want to send them the link?", function(){
-                setComposerChips([
-                  {label:'Invite this buyer', value:'invite'},
-                  {label:'Preview the buyer view', value:'preview'},
-                  {label:'Change the numbers', value:'change'}
-                ], function(v){
-                  if(v==='invite'){ agentAskName(); }
-                  else if(v==='preview'){ previewBuyerFromAgent(); }
-                  else { agentAskAddress(); }
-                });
-              });
-            }
-          );
-        }
-      );
+      showAgentScenarioShareOptions(false);
     });
   }
 
